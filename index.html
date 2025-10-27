@@ -19,10 +19,26 @@
 
 <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
-    const {
-        User, Clock, Loader2, List, XCircle, MessageSquare, Mic,
-        Plus, Save, Trash2, Volume2, Shield, Car, GitBranch, Send, Target, AlertTriangle
-    } = lucide;
+
+    // --- FIX START: Correctly access Lucide Icons from global CDN object ---
+    const User = lucide.User;
+    const Clock = lucide.Clock;
+    const Loader2 = lucide.Loader2;
+    const List = lucide.List;
+    const XCircle = lucide.XCircle;
+    const MessageSquare = lucide.MessageSquare;
+    const Mic = lucide.Mic;
+    const Plus = lucide.Plus;
+    const Save = lucide.Save;
+    const Trash2 = lucide.Trash2;
+    const Volume2 = lucide.Volume2;
+    const Shield = lucide.Shield;
+    const Car = lucide.Car;
+    const GitBranch = lucide.GitBranch;
+    const Send = lucide.Send;
+    const Target = lucide.Target;
+    const AlertTriangle = lucide.AlertTriangle;
+    // --- FIX END ---
 
     // --- Global Firebase Variables (Mandatory Placeholders) ---
     // NOTE: Replace these with your actual Firebase config if deploying
@@ -53,12 +69,11 @@
         weaponKilledSniper: null,
     };
 
-    // MODIFIED: Added status field and updated state
     const initialVoiceTraineeState = {
         traineeDiscordId: '123456789012345678', // Example ID for webhook ping
         traineeRobloxUsername: 'ExampleTraineeRBX',
         traineeName: 'Test Trainee',
-        status: 'Pending', // Status is no longer set by verify/deny buttons
+        status: 'Pending',
     };
     
     // --- Helper Components ---
@@ -104,7 +119,6 @@
     // --- Tab Components ---
 
     const SubmitResultsTab = ({ db, userId, evaluations }) => {
-        // Keeping previous structure/logic as no changes were requested here.
         const [trainee, setTrainee] = useState(initialTraineeState);
         const [isLoading, setIsLoading] = useState(false);
 
@@ -114,6 +128,7 @@
 
             setIsLoading(true);
             try {
+                // Simplified Firebase calls using compat version
                 await db.collection('evaluations').add({
                     ...trainee,
                     knowledgeScore: parseInt(trainee.knowledgeScore),
@@ -130,7 +145,7 @@
             }
         };
 
-        // Simplified rendering for brevity. Full implementation would have all fields.
+        // Simplified rendering for brevity. 
         return (
             <div className="bg-slate-800 p-6 rounded-xl shadow-2xl max-w-lg mx-auto">
                 <h2 className="text-2xl font-semibold mb-4 text-white">Submit Trainee Results</h2>
@@ -151,7 +166,6 @@
                         placeholder="Trainee Roblox Username"
                         required
                     />
-                    {/* Simplified: only including one toggle button for example */}
                     <ToggleButton
                         label="Mod used good English?"
                         value={trainee.modGoodEnglish}
@@ -171,7 +185,6 @@
     };
 
     const AnnounceTrainingTab = ({ db, userId }) => {
-        // MODIFIED: Added trainingDate state
         const [trainingDate, setTrainingDate] = useState('');
         const [trainingTime, setTrainingTime] = useState('');
         const [link, setLink] = useState('');
@@ -181,7 +194,6 @@
             e.preventDefault();
             if (isLoading) return;
             
-            // Check if both date and time are provided
             if (!trainingDate || !trainingTime) {
                 alert("Please provide both the date and time for the announcement.");
                 return;
@@ -189,9 +201,9 @@
 
             setIsLoading(true);
             try {
+                // Firebase call to store announcement
                 await db.collection('announcements').add({
-                    // MODIFIED: Combining date and time into one field
-                    dateTime: `${trainingDate} at ${trainingTime}`,
+                    dateTime: `${trainingDate} at ${trainingTime}`, // UPDATED: Date and Time combined
                     link,
                     trainerId: userId,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -267,8 +279,7 @@
 
             setIsPublishing(true);
             
-            // Assume the user is 'verified' or 'denied' based on some hidden logic 
-            // or simply use 'Verified' for the example publish action
+            // For testing purposes, hardcoding status as 'Verified' upon publishing
             const finalStatus = 'Verified'; 
 
             // Construct the Discord embed payload
@@ -300,7 +311,6 @@
 
                 if (response.ok) {
                     alert('Results published successfully to Discord!');
-                    // Optionally reset state or proceed to next trainee
                     setAgeRange('');
                 } else {
                     const errorText = await response.text();
@@ -415,7 +425,7 @@
 
         return (
             <div className="max-w-4xl mx-auto p-4">
-                {/* MODIFIED: New Title */}
+                {/* New Title */}
                 <h1 className="text-3xl font-bold mb-8 text-white text-center">HRPB | Trainee Evaluation</h1>
                 
                 <div className="flex justify-center">
