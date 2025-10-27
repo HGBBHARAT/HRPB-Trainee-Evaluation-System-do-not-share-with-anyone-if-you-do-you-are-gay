@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>.GitHub Trainee Evaluation Form (Standalone)</title>
+    <title>.GitHub Trainee Evaluation Form (Complete)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -50,7 +50,6 @@
         const { useState, useEffect, useCallback } = React;
 
         // --- Mocking Lucide Icons (only the ones used in the code) ---
-        // In a single file, we define simplified icon components
         const User = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
         const Loader2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" /></svg>;
         const List = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
@@ -62,7 +61,12 @@
         const GitBranch = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>;
         const Target = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
         const AlertTriangle = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
-
+        const MessageSquare = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+        const Mic = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>;
+        const Car = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-4c0-.7-.4-1-1-1h-1V7c0-2.2-1.8-4-4-4H7c-2.2 0-4 1.8-4 4v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M18 7H6"/><path d="M8 10h6"/></svg>;
+        const Volume2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>;
+        const Clock = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const Send = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
 
         // --- Utility Constants ---
         const initialTraineeState = {
@@ -79,6 +83,14 @@
             weaponDeaths: '',
             weaponKilledSniper: null,
             status: 'pending', // 'pending', 'passed', 'failed', 'disqualified', 'processing'
+        };
+        
+        const initialVoiceTraineeState = {
+            traineeDiscordId: '',
+            traineeRobloxUsername: '',
+            traineeName: '',
+            verified: null, // 'true' or 'false'
+            status: 'pending', // 'pending', 'verified', 'denied', 'processing'
         };
 
         const WeaponDeathOptions = [
@@ -97,9 +109,6 @@
 
         // --- Utility Functions ---
 
-        /**
-         * Checks if all required fields are present for a single trainee.
-         */
         const checkTraineeRequiredFields = (trainee) => {
             if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername || !trainee.traineeName) return false;
             if (trainee.knowledgeScore === '' || 
@@ -115,21 +124,17 @@
             return true;
         };
         
-        // Mock serverTimestamp and addDoc for the simple HTML context
+        const checkVoiceTraineeRequiredFields = (trainee) => {
+             if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername || !trainee.traineeName) return false;
+             if (trainee.verified === null) return false;
+             return true;
+        };
+
         const mockServerTimestamp = () => new Date().toISOString();
         const mockAddDoc = async (data) => {
             console.log("MOCK API CALL: Evaluation Submitted. Data:", data);
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500)); 
             // In a real application, you would send this to your webhook URL here.
-            // Example of where you would use the webhook URL:
-            /*
-            const webhookUrl = "YOUR_WEBHOOK_URL_HERE"; 
-            await fetch(webhookUrl, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            */
             return { id: Math.random().toString(36).substring(2, 9) };
         };
 
@@ -177,178 +182,36 @@
                 </div>
             );
         };
+        
+        // --- TabButton Component ---
+        const TabButton = ({ icon: Icon, label, isActive, onClick }) => (
+            <button
+                className={`flex items-center text-sm font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${
+                    isActive 
+                        ? 'text-white bg-indigo-600 shadow-lg' 
+                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                }`}
+                onClick={onClick}
+            >
+                <Icon className="w-5 h-5 mr-2" />
+                {label}
+            </button>
+        );
+
+        // --- Disqualification Modal Component (Skipped for brevity but assumed to exist) ---
+        // (The full component exists in the EvaluationForm logic below)
+
+        // --- Per-Trainee Action Buttons Component (Skipped for brevity but assumed to exist) ---
+        // (The full component exists in the EvaluationForm logic below)
 
 
-        // --- Disqualification Modal Component ---
-        const DisqualificationModal = ({ trainee, traineeIndex, onConfirm, onCancel, trainerUsername, isSaving }) => {
-            const [proofLink, setProofLink] = useState('');
-            const [reason, setReason] = useState('');
-            const [confirmationText, setConfirmationText] = useState('');
-            
-            const traineeName = trainee.traineeName || `Trainee #${traineeIndex + 1}`;
-            const requiredConfirmation = `DISQUALIFY ${traineeName}`;
-
-            const handleConfirm = () => {
-                if (confirmationText.toUpperCase() === requiredConfirmation.toUpperCase()) {
-                    onConfirm(traineeIndex, proofLink, reason);
-                }
-            };
-
-            return (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-4">
-                    <div className="bg-slate-800 rounded-xl shadow-2xl border border-rose-600 w-full max-w-lg">
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center text-rose-400 border-b border-rose-700 pb-3">
-                                <AlertTriangle className="w-6 h-6 mr-3" />
-                                <h3 className="text-xl font-bold text-white">Confirm Disqualification</h3>
-                            </div>
-
-                            <p className="text-slate-300">
-                                You are about to **permanently disqualify {traineeName}** from this training session. This action requires mandatory proof.
-                            </p>
-
-                            <div className="space-y-1">
-                                <label className="block text-sm font-medium text-white">
-                                    Evidence Link (Video/Screenshot) <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://i.imgur.com/proof.png or video link"
-                                    value={proofLink}
-                                    onChange={(e) => setProofLink(e.target.value)}
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500"
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="block text-sm font-medium text-white">
-                                    Reason for Disqualification <span className="text-rose-500">*</span>
-                                </label>
-                                <textarea
-                                    placeholder="Specify the rule they broke or why they are being disqualified."
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    rows="3"
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500 resize-none"
-                                    required
-                                />
-                            </div>
-                            
-                            <div className="space-y-1 pt-3 border-t border-slate-700">
-                                <label className="block text-sm font-medium text-rose-300">
-                                    Type the following to confirm: <code className="text-rose-400">{requiredConfirmation}</code>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={confirmationText}
-                                    onChange={(e) => setConfirmationText(e.target.value)}
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-rose-400 placeholder-slate-500 font-mono focus:ring-rose-500 focus:border-rose-500"
-                                />
-                            </div>
-
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={onCancel}
-                                    className="px-4 py-2 text-sm font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition duration-150"
-                                    disabled={isSaving}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleConfirm}
-                                    disabled={confirmationText.toUpperCase() !== requiredConfirmation.toUpperCase() || !proofLink.trim() || !reason.trim() || isSaving}
-                                    className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-rose-600 hover:bg-rose-700 transition duration-150 disabled:bg-rose-900 disabled:text-rose-500 disabled:cursor-not-allowed"
-                                >
-                                    {isSaving ?
-                                        (
-                                            <>
-                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                                Disqualifying...
-                                            </>
-                                        ) : (
-                                            'Disqualify Trainee'
-                                        )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-
-        // --- Per-Trainee Action Buttons Component ---
-        const TraineeActionButtons = ({ trainee, index, onFinalize, onDisqualify, isValid }) => {
-            let statusClasses = "text-sm font-semibold px-3 py-1 rounded-full";
-            let statusText = "";
-
-            if (trainee.status === 'pending') {
-                statusClasses += " bg-slate-600 text-white";
-                statusText = "Pending Evaluation";
-            } else if (trainee.status === 'passed') {
-                statusClasses += " bg-emerald-600 text-white";
-                statusText = "PASSED";
-            } else if (trainee.status === 'failed') {
-                statusClasses += " bg-yellow-600 text-white";
-                statusText = "FAILED";
-            } else if (trainee.status === 'disqualified') {
-                statusClasses += " bg-rose-600 text-white";
-                statusText = "DISQUALIFIED";
-            } else if (trainee.status === 'processing') {
-                statusClasses += " bg-sky-600 text-white";
-                statusText = "Processing...";
-            }
-            
-            const isReadyForFinalize = isValid && trainee.status === 'pending';
-            const isReadyForDisqualify = 
-                trainee.status === 'pending' && 
-                trainee.traineeDiscordId.trim() && 
-                trainee.traineeRobloxUsername.trim() && 
-                trainee.traineeName.trim();
-
-            return (
-                <div className="pt-4 border-t border-slate-600">
-                    <h4 className="text-lg font-bold text-white mb-3">Final Action</h4>
-                    <div className="flex items-center justify-between">
-                        <span className={statusClasses}>{statusText}</span>
-                        <div className="flex space-x-3">
-                            {trainee.status === 'pending' && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={onDisqualify}
-                                        disabled={!isReadyForDisqualify || trainee.status === 'processing'}
-                                        className="flex items-center bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
-                                    >
-                                        <XCircle className="w-4 h-4 mr-1" /> Disqualify
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={onFinalize}
-                                        disabled={!isReadyForFinalize || trainee.status === 'processing'}
-                                        className="flex items-center bg-emerald-700 hover:bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
-                                    >
-                                        <Save className="w-4 h-4 mr-1" /> Save Result
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-
-        // --- TraineeAssessmentSection (Includes per-trainee buttons) ---
+        // --- EvaluationForm (Submit Results Tab Content) ---
         const TraineeAssessmentSection = ({ trainee, index, onUpdate, onRemove, onFinalize, onDisqualify, isRemovable, requiredFieldsValid }) => (
             <section 
                 className="space-y-4 p-5 bg-slate-700 rounded-xl border border-slate-600 relative opacity-100 transition-opacity duration-300"
                 style={trainee.status !== 'pending' ? {opacity: 0.7} : {}} 
             >
+                {/* ... (Trainee Assessment Fields and Final Action Buttons from the previous version) ... */}
                 <h3 className="text-xl font-bold text-white mb-4 flex justify-between items-center">
                     Trainee #{index + 1}
                     {isRemovable && (
@@ -515,9 +378,167 @@
                 />
             </section>
         );
+        
+        const TraineeActionButtons = ({ trainee, index, onFinalize, onDisqualify, isValid }) => {
+            let statusClasses = "text-sm font-semibold px-3 py-1 rounded-full";
+            let statusText = "";
 
-        // --- EvaluationForm (Refactored for per-trainee submission) ---
-        // Mocks db and userId as they are Firebase specific
+            if (trainee.status === 'pending') {
+                statusClasses += " bg-slate-600 text-white";
+                statusText = "Pending Evaluation";
+            } else if (trainee.status === 'passed') {
+                statusClasses += " bg-emerald-600 text-white";
+                statusText = "PASSED";
+            } else if (trainee.status === 'failed') {
+                statusClasses += " bg-yellow-600 text-white";
+                statusText = "FAILED";
+            } else if (trainee.status === 'disqualified') {
+                statusClasses += " bg-rose-600 text-white";
+                statusText = "DISQUALIFIED";
+            } else if (trainee.status === 'processing') {
+                statusClasses += " bg-sky-600 text-white";
+                statusText = "Processing...";
+            }
+            
+            const isReadyForFinalize = isValid && trainee.status === 'pending';
+            const isReadyForDisqualify = 
+                trainee.status === 'pending' && 
+                trainee.traineeDiscordId.trim() && 
+                trainee.traineeRobloxUsername.trim() && 
+                trainee.traineeName.trim();
+
+            return (
+                <div className="pt-4 border-t border-slate-600">
+                    <h4 className="text-lg font-bold text-white mb-3">Final Action</h4>
+                    <div className="flex items-center justify-between">
+                        <span className={statusClasses}>{statusText}</span>
+                        <div className="flex space-x-3">
+                            {trainee.status === 'pending' && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={onDisqualify}
+                                        disabled={!isReadyForDisqualify || trainee.status === 'processing'}
+                                        className="flex items-center bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
+                                    >
+                                        <XCircle className="w-4 h-4 mr-1" /> Disqualify
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={onFinalize}
+                                        disabled={!isReadyForFinalize || trainee.status === 'processing'}
+                                        className="flex items-center bg-emerald-700 hover:bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
+                                    >
+                                        <Save className="w-4 h-4 mr-1" /> Save Result
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const DisqualificationModal = ({ trainee, traineeIndex, onConfirm, onCancel, trainerUsername, isSaving }) => {
+            const [proofLink, setProofLink] = useState('');
+            const [reason, setReason] = useState('');
+            const [confirmationText, setConfirmationText] = useState('');
+            
+            const traineeName = trainee.traineeName || `Trainee #${traineeIndex + 1}`;
+            const requiredConfirmation = `DISQUALIFY ${traineeName}`;
+
+            const handleConfirm = () => {
+                if (confirmationText.toUpperCase() === requiredConfirmation.toUpperCase()) {
+                    onConfirm(traineeIndex, proofLink, reason);
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-4">
+                    <div className="bg-slate-800 rounded-xl shadow-2xl border border-rose-600 w-full max-w-lg">
+                        <div className="p-6 space-y-4">
+                            <div className="flex items-center text-rose-400 border-b border-rose-700 pb-3">
+                                <AlertTriangle className="w-6 h-6 mr-3" />
+                                <h3 className="text-xl font-bold text-white">Confirm Disqualification</h3>
+                            </div>
+
+                            <p className="text-slate-300">
+                                You are about to **permanently disqualify {traineeName}** from this training session. This action requires mandatory proof.
+                            </p>
+
+                            <div className="space-y-1">
+                                <label className="block text-sm font-medium text-white">
+                                    Evidence Link (Video/Screenshot) <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    placeholder="https://i.imgur.com/proof.png or video link"
+                                    value={proofLink}
+                                    onChange={(e) => setProofLink(e.target.value)}
+                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="block text-sm font-medium text-white">
+                                    Reason for Disqualification <span className="text-rose-500">*</span>
+                                </label>
+                                <textarea
+                                    placeholder="Specify the rule they broke or why they are being disqualified."
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    rows="3"
+                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500 resize-none"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="space-y-1 pt-3 border-t border-slate-700">
+                                <label className="block text-sm font-medium text-rose-300">
+                                    Type the following to confirm: <code className="text-rose-400">{requiredConfirmation}</code>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={confirmationText}
+                                    onChange={(e) => setConfirmationText(e.target.value)}
+                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-rose-400 placeholder-slate-500 font-mono focus:ring-rose-500 focus:border-rose-500"
+                                />
+                            </div>
+
+                            <div className="flex justify-end space-x-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="px-4 py-2 text-sm font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition duration-150"
+                                    disabled={isSaving}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleConfirm}
+                                    disabled={confirmationText.toUpperCase() !== requiredConfirmation.toUpperCase() || !proofLink.trim() || !reason.trim() || isSaving}
+                                    className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-rose-600 hover:bg-rose-700 transition duration-150 disabled:bg-rose-900 disabled:text-rose-500 disabled:cursor-not-allowed"
+                                >
+                                    {isSaving ?
+                                        (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                Disqualifying...
+                                            </>
+                                        ) : (
+                                            'Disqualify Trainee'
+                                        )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const EvaluationForm = ({ db, userId }) => {
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
             const [coTrainers, setCoTrainers] = useState([]); 
@@ -585,7 +606,7 @@
                     disqualification: status === 'DISQUALIFIED' ?
                         { proofLink, reason } : null,
                 },
-                timestamp: mockServerTimestamp(), // Using mock timestamp
+                timestamp: mockServerTimestamp(), 
                 userId: userId,
                 status: status, 
                 totalScore: status === 'DISQUALIFIED' ?
@@ -827,19 +848,399 @@
             );
         };
         
-        // --- Simplified App Component to render the form ---
+        // --- AnnounceTrainingTab (Mocked based on image_d59909.png) ---
+        const AnnounceTrainingTab = ({ db, userId }) => {
+            const [trainerName, setTrainerName] = useState('');
+            const [time, setTime] = useState('');
+            const [serverLink, setServerLink] = useState('');
+            const [isSending, setIsSending] = useState(false);
+            const [success, setSuccess] = useState(false);
+            const [error, setError] = useState(null);
+
+            const isFormValid = trainerName.trim() && time.trim() && serverLink.trim();
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError(null);
+                setSuccess(false);
+                if (!isFormValid) {
+                    setError("Please fill out all required fields.");
+                    return;
+                }
+
+                setIsSending(true);
+                console.log("MOCK API CALL: Announce Training", { trainerName, time, serverLink });
+                
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate webhook delay
+                    setSuccess("Training announcement successfully sent! (Mocked)");
+                } catch (err) {
+                    setError("Failed to send announcement. (Mocked Error)");
+                } finally {
+                    setIsSending(false);
+                }
+            };
+
+            return (
+                <form onSubmit={handleSubmit} className="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 w-full space-y-6">
+                    <h2 className="text-2xl font-bold text-white flex items-center border-b border-slate-700 pb-4">
+                        <MessageSquare className="w-6 h-6 mr-2 text-sky-400" />
+                        Announce Training
+                    </h2>
+                    
+                    {error && (
+                        <div className="bg-rose-900 text-rose-300 p-3 rounded-lg flex items-center">
+                            <XCircle className="w-5 h-5 mr-2" />
+                            {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div className="bg-emerald-900 text-emerald-300 p-3 rounded-lg flex items-center">
+                            <Send className="w-5 h-5 mr-2" />
+                            {success}
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-slate-200 flex items-center">
+                                <User className="w-4 h-4 mr-2" /> Trainer Name <span className="text-rose-500">*</span>
+                            </label>
+                            <input type="text" placeholder="Your Roblox username" value={trainerName} onChange={(e) => setTrainerName(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500" required />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-slate-200 flex items-center">
+                                <Clock className="w-4 h-4 mr-2" /> Training Time (Example: 19:30 GMT) <span className="text-rose-500">*</span>
+                            </label>
+                            <input type="text" placeholder="HH:MM GMT" value={time} onChange={(e) => setTime(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500" required />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-slate-200 flex items-center">
+                                <Car className="w-4 h-4 mr-2" /> Server Link <span className="text-rose-500">*</span>
+                            </label>
+                            <input type="url" placeholder="Roblox Server Link (e.g., https://www.roblox.com/games/join)" value={serverLink} onChange={(e) => setServerLink(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500" required />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isSending || !isFormValid}
+                        className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 shadow-lg"
+                    >
+                        {isSending ? (
+                            <>
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                Sending Announcement...
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5 mr-2" />
+                                Send Announcement
+                            </>
+                        )}
+                    </button>
+                </form>
+            );
+        };
+        
+        // --- VoiceVerificationTab (Mocked based on image_d59922.png) ---
+        const VoiceVerificationTab = ({ db, userId }) => {
+            const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
+            const [trainees, setTrainees] = useState([initialVoiceTraineeState]);
+            const [isSaving, setIsSaving] = useState(false);
+            const [error, setError] = useState(null);
+            const [success, setSuccess] = useState(false);
+
+            const addTrainee = () => {
+                if (trainees.length < 5) {
+                    setTrainees([...trainees, initialVoiceTraineeState]);
+                    setError(null);
+                } else {
+                    setError("Maximum of 5 trainees reached.");
+                }
+            };
+            
+            const removeTrainee = (index) => {
+                if (trainees.length > 1) {
+                    setTrainees(trainees.filter((_, i) => i !== index));
+                }
+            };
+
+            const updateTrainee = (index, field, value) => {
+                const newTrainees = trainees.map((trainee, i) => {
+                    if (i === index) {
+                        return { ...trainee, [field]: value };
+                    }
+                    return trainee;
+                });
+                setTrainees(newTrainees);
+            };
+            
+            const handleFinalizeAll = async (e) => {
+                e.preventDefault();
+                setError(null);
+                setSuccess(false);
+
+                if (!trainerRobloxUsername.trim()) {
+                    setError("Please enter the Trainer's Roblox Username.");
+                    return;
+                }
+                
+                const pendingTrainees = trainees.filter(t => t.status === 'pending');
+                if (pendingTrainees.length > 0) {
+                    setError("Please verify or deny all trainees before submitting.");
+                    return;
+                }
+
+                setIsSaving(true);
+                
+                try {
+                    const finalData = trainees.map(t => ({
+                        trainer: trainerRobloxUsername.trim(),
+                        traineeDiscordId: t.traineeDiscordId.trim(),
+                        traineeRobloxUsername: t.traineeRobloxUsername.trim(),
+                        status: t.status.toUpperCase(),
+                        timestamp: mockServerTimestamp()
+                    }));
+
+                    console.log("MOCK API CALL: Voice Verification Batch Submission", finalData);
+                    await mockAddDoc({ batch: finalData }); // Mock batch submission
+
+                    setSuccess(`Successfully processed ${trainees.length} voice verification results!`);
+                    setTimeout(() => setSuccess(false), 5000);
+                    setTrainees(trainees.map(t => ({ ...t, status: t.status === 'processing' ? (t.verified ? 'verified' : 'denied') : t.status })));
+
+                } catch (err) {
+                    console.error("Error saving voice verifications:", err);
+                    setError("Failed to save all voice verifications. Check console for details.");
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+            
+            const handleIndividualAction = (index, action) => {
+                const trainee = trainees[index];
+                if (!checkVoiceTraineeRequiredFields({ ...trainee, verified: action === 'verify' ? true : false })) {
+                    setError(`Please fill out Trainee #${index + 1}'s basic info before proceeding.`);
+                    return;
+                }
+                updateTrainee(index, 'verified', action === 'verify' ? true : false);
+                updateTrainee(index, 'status', action === 'verify' ? 'verified' : 'denied');
+            };
+
+            const totalTrainees = trainees.length;
+            const processedTrainees = trainees.filter(t => t.status !== 'pending').length;
+            const verifiedTrainees = trainees.filter(t => t.status === 'verified').length;
+            const summaryText = `${processedTrainees}/${totalTrainees} Trainees Processed, ${verifiedTrainees} Verified`;
+
+            return (
+                <form onSubmit={handleFinalizeAll} className="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 w-full">
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center border-b border-slate-700 pb-4">
+                        <Mic className="w-6 h-6 mr-2 text-sky-400" />
+                        Voice Verification
+                    </h2>
+
+                    <section className="space-y-4 mb-8">
+                        <h3 className="text-xl font-bold text-white flex items-center">
+                            <User className="w-5 h-5 mr-2 text-sky-400" />
+                            Trainer Information
+                        </h3>
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-slate-200">
+                                Trainer Roblox Username <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Your Roblox username"
+                                value={trainerRobloxUsername}
+                                onChange={(e) => setTrainerRobloxUsername(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
+                                required
+                            />
+                        </div>
+                    </section>
+
+                    <div className="space-y-8">
+                        {trainees.map((trainee, index) => {
+                            let statusClasses = "text-sm font-semibold px-3 py-1 rounded-full";
+                            let statusText = "";
+                            if (trainee.status === 'pending') {
+                                statusClasses += " bg-slate-600 text-white";
+                                statusText = "Pending";
+                            } else if (trainee.status === 'verified') {
+                                statusClasses += " bg-emerald-600 text-white";
+                                statusText = "Verified";
+                            } else if (trainee.status === 'denied') {
+                                statusClasses += " bg-rose-600 text-white";
+                                statusText = "Denied";
+                            }
+                            
+                            const isEditable = trainee.status === 'pending';
+
+                            return (
+                                <section key={index} className="space-y-4 p-5 bg-slate-700 rounded-xl border border-slate-600 relative" style={!isEditable ? {opacity: 0.7} : {}}>
+                                    <h3 className="text-xl font-bold text-white mb-4 flex justify-between items-center">
+                                        Trainee #{index + 1}
+                                        {trainees.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeTrainee(index)}
+                                                className="text-rose-400 hover:text-rose-300 p-1 rounded-full hover:bg-slate-600 transition"
+                                                aria-label={`Remove Trainee ${index + 1}`}
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        )}
+                                    </h3>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-slate-600">
+                                        <input type="number" placeholder="Discord ID *" value={trainee.traineeDiscordId} onChange={(e) => updateTrainee(index, 'traineeDiscordId', e.target.value)}
+                                            className="p-3 rounded-lg bg-slate-800 border border-slate-600 text-white" disabled={!isEditable}/>
+                                        <input type="text" placeholder="Roblox Username *" value={trainee.traineeRobloxUsername} onChange={(e) => updateTrainee(index, 'traineeRobloxUsername', e.target.value)}
+                                            className="p-3 rounded-lg bg-slate-800 border border-slate-600 text-white" disabled={!isEditable}/>
+                                        <input type="text" placeholder="Name *" value={trainee.traineeName} onChange={(e) => updateTrainee(index, 'traineeName', e.target.value)}
+                                            className="p-3 rounded-lg bg-slate-800 border border-slate-600 text-white" disabled={!isEditable}/>
+                                    </div>
+                                    
+                                    <div className="pt-4 border-t border-slate-600">
+                                        <h4 className="text-lg font-bold text-white mb-3 flex items-center">
+                                            <Volume2 className="w-4 h-4 mr-2 text-sky-400" /> Verification Status
+                                        </h4>
+                                        <div className="flex items-center justify-between">
+                                            <span className={statusClasses}>{statusText}</span>
+                                            {trainee.status === 'pending' && (
+                                                <div className="flex space-x-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleIndividualAction(index, 'deny')}
+                                                        className="flex items-center bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 shadow-md"
+                                                    >
+                                                        <XCircle className="w-4 h-4 mr-1" /> Deny
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleIndividualAction(index, 'verify')}
+                                                        className="flex items-center bg-emerald-700 hover:bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 shadow-md"
+                                                    >
+                                                        <Save className="w-4 h-4 mr-1" /> Verify
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </section>
+                            );
+                        })}
+
+                        {/* Add Trainee Button */}
+                        {trainees.length < 5 && (
+                            <div className="pt-4 pb-4 border-t border-slate-700">
+                                <button
+                                    type="button"
+                                    onClick={addTrainee}
+                                    className="w-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-lg transition duration-200 shadow-md border border-dashed border-slate-600"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" /> 
+                                    Add Trainee ({trainees.length}/5)
+                                </button>
+                            </div>
+                        )}
+                        
+                        {/* Status Messages */}
+                        {error && (
+                            <div className="bg-rose-900 text-rose-300 p-3 rounded-lg flex items-center">
+                                <XCircle className="w-5 h-5 mr-2" />
+                                {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="bg-emerald-900 text-emerald-300 p-3 rounded-lg flex items-center">
+                                <Send className="w-5 h-5 mr-2" />
+                                {success}
+                            </div>
+                        )}
+
+                        {/* Final Submit Button and Summary Indicator */}
+                        <div className="pt-4 border-t border-slate-700 space-y-4">
+                            <div className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-lg text-lg">
+                                <Mic className="w-5 h-5 mr-2" />
+                                {summaryText}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isSaving || processedTrainees === 0}
+                                className="w-full flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 shadow-lg"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                        Submitting Batch...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5 mr-2" />
+                                        Submit All Verification Results
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            );
+        };
+
+        // --- Main App Component ---
         const App = () => {
-            // Mock Firebase dependencies. Replace 'mock-user-id' with your actual user ID if needed.
+            const [activeTab, setActiveTab] = useState('results'); // Default to 'Submit Results'
             const db = {}; 
             const userId = "mock-user-id";
             
+            // Note: In a true React app, these components would be separate files.
+            // Here, they are defined above and called based on the activeTab state.
+
             return (
                 <div className="p-6 bg-slate-900 min-h-screen">
                     <div className="max-w-4xl mx-auto">
-                        {/* We skip the tab structure and render the main form directly */}
-                        <div className="grid grid-cols-1 gap-8 mt-8">
-                            <EvaluationForm db={db} userId={userId} />
+                        
+                        {/* Tab Bar */}
+                        <div className="flex space-x-4 mb-8 p-2 bg-slate-800 rounded-xl shadow-lg">
+                            <TabButton
+                                icon={MessageSquare}
+                                label="Announce Training"
+                                isActive={activeTab === 'announcement'}
+                                onClick={() => setActiveTab('announcement')}
+                            />
+                            <TabButton
+                                icon={List}
+                                label="Submit Results"
+                                isActive={activeTab === 'results'}
+                                onClick={() => setActiveTab('results')}
+                            />
+                            <TabButton
+                                icon={Mic}
+                                label="Voice Verification"
+                                isActive={activeTab === 'voice'}
+                                onClick={() => setActiveTab('voice')}
+                            />
                         </div>
+
+                        {/* Conditional Content Rendering */}
+                        {activeTab === 'results' && (
+                            <EvaluationForm db={db} userId={userId} />
+                        )}
+
+                        {activeTab === 'announcement' && (
+                            <AnnounceTrainingTab db={db} userId={userId} />
+                        )}
+
+                        {activeTab === 'voice' && (
+                            <VoiceVerificationTab db={db} userId={userId} />
+                        )}
                     </div>
                 </div>
             );
