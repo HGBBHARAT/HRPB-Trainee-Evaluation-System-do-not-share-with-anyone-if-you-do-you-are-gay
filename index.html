@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRPB Trainee Evaluation for Staff Team</title>
+    <title>HRPB Trainee Evaluation System</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -50,10 +50,9 @@
 
         // --- CRITICAL: API CONFIGURATION ---
         const API_ENDPOINT = "http://s9.katabump.com:5000"; 
-        // Note: Ensure this matches the host/port where your Python bot is running.
         const MAX_TRAINEES = 5;
 
-        // --- MOCKED LUCIDE ICON COMPONENTS (FIXED & COMPLETE) ---
+        // --- MOCKED LUCIDE ICON COMPONENTS ---
         const User = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
         const Loader2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" /></svg>;
         const List = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
@@ -130,6 +129,36 @@
             </div>
         );
 
+        // --- CORE MARK CALCULATION FUNCTION (FIXED) ---
+        const calculateTraineeMarks = (trainee) => {
+            if (trainee.status === 'DISQUALIFIED' || trainee.status === 'PENDING' || !trainee.assessment) return 0;
+
+            const assessment = trainee.assessment;
+            let score = 0;
+            
+            // 1. Knowledge (Max 10)
+            score += parseInt(assessment.knowledgeScore) || 0;
+            
+            // 2. Moderation (4 * 5 = Max 20)
+            score += (assessment.moderation?.goodSpag === 'yes' ? 5 : 0);
+            score += (assessment.moderation?.healedTrainer === 'yes' ? 5 : 0);
+            score += (assessment.moderation?.askedForProof === 'yes' ? 5 : 0);
+            score += (assessment.moderation?.punishedCorrectly === 'yes' ? 5 : 0);
+            
+            // 3. Weapon Handling (Max 20)
+            const deaths = parseInt(assessment.weaponHandling?.deaths) || 0;
+            let deathMarks = 0;
+            // Based on explicit criteria: 0 (10), 1 (7), 2 (3), 3+ (0)
+            if (deaths === 0) deathMarks = 10;
+            else if (deaths === 1) deathMarks = 7;
+            else if (deaths === 2) deathMarks = 3;
+            else if (deaths >= 3) deathMarks = 0;
+            
+            score += deathMarks; 
+            score += (assessment.weaponHandling?.spottedSniper === 'yes' ? 10 : 0);
+            
+            return Math.round(score);
+        };
 
         // --- EVALUATION FORM COMPONENTS ---
 
@@ -141,6 +170,19 @@
             };
 
             const handleAssessmentChange = (section, field, value) => {
+                const isKnowledge = field === null && section === 'knowledgeScore';
+                const isKnowledgeNotes = field === null && section === 'knowledgeNotes';
+
+                if (isKnowledge || isKnowledgeNotes) {
+                    updateTrainee(index, {
+                        assessment: { 
+                            ...trainee.assessment, 
+                            [section]: value
+                        }
+                    });
+                    return;
+                }
+
                 updateTrainee(index, {
                     assessment: { 
                         ...trainee.assessment, 
@@ -158,7 +200,10 @@
                 if (status === 'DISQUALIFIED') {
                     newState.assessment = null;
                     if (!trainee.disqualification) newState.disqualification = { reason: '', proofLink: '' };
-                } else { // PASSED or FAILED
+                } else if (status === 'PENDING') {
+                     newState.assessment = null;
+                     newState.disqualification = null;
+                } else { // Evaluate to determine PASSED or FAILED
                     newState.disqualification = null;
                     if (!trainee.assessment) newState.assessment = { 
                         knowledgeScore: '', moderation: {}, weaponHandling: { deaths: 0 } 
@@ -167,37 +212,9 @@
                 updateTrainee(index, newState);
             };
             
-            // Calculate Total Marks and Status
+            // Calculate Total Marks and Status using the fixed function
             const totalMarks = useMemo(() => {
-                if (trainee.status === 'DISQUALIFIED' || trainee.status === 'PENDING') return 0;
-
-                const assessment = trainee.assessment;
-                if (!assessment) return 0;
-                
-                let score = 0;
-                // Knowledge (Max 10)
-                score += parseInt(assessment.knowledgeScore) || 0;
-                
-                // Moderation (4 * 5 = Max 20)
-                score += (assessment.moderation?.goodSpag === 'yes' ? 5 : 0);
-                score += (assessment.moderation?.healedTrainer === 'yes' ? 5 : 0);
-                score += (assessment.moderation?.askedForProof === 'yes' ? 5 : 0);
-                score += (assessment.moderation?.punishedCorrectly === 'yes' ? 5 : 0);
-                
-                // Weapon Handling (Max 20)
-                const deaths = parseInt(assessment.weaponHandling?.deaths) || 0;
-                // Max 10 marks for deaths (0 deaths = 10 marks, 3+ deaths = 0 marks)
-                let deathMarks = Math.max(0, 10 - (deaths * 3.33));
-                if(deaths >= 3) deathMarks = 0;
-                else if (deaths === 2) deathMarks = 3;
-                else if (deaths === 1) deathMarks = 7;
-                else if (deaths === 0) deathMarks = 10;
-                
-                score += deathMarks; 
-                score += (assessment.weaponHandling?.spottedSniper === 'yes' ? 10 : 0);
-                
-                return Math.round(score);
-
+                return calculateTraineeMarks(trainee);
             }, [trainee.status, trainee.assessment]);
 
             const finalVerdict = useMemo(() => {
@@ -209,16 +226,15 @@
                     : { label: 'FAILED', color: 'text-red-500' };
             }, [trainee.status, totalMarks]);
             
-            // Sync Trainee Status with Calculated Verdict if not Disqualified
+            // Sync Trainee Status with Calculated Verdict if evaluating
             useEffect(() => {
-                if (trainee.status !== 'DISQUALIFIED' && trainee.status !== 'PENDING') {
+                if (trainee.status !== 'DISQUALIFIED' && trainee.status !== 'PENDING' && trainee.assessment && trainee.assessment.knowledgeScore !== '') {
                     const newStatus = finalVerdict.label;
                     if (trainee.status !== newStatus) {
-                         // Only update the local state if the calculated result changes the status
                         updateTrainee(index, { status: newStatus });
                     }
                 }
-            }, [finalVerdict.label]);
+            }, [finalVerdict.label, trainee.assessment?.knowledgeScore]);
 
 
             return (
@@ -256,7 +272,7 @@
 
                     <div className="flex space-x-4">
                          <RadioGroup
-                            label="Final Verdict Option"
+                            label="Trainee Status"
                             name={`status-${index}`}
                             selected={trainee.status}
                             onChange={handleStatusChange}
@@ -372,7 +388,7 @@
                                 <SelectField
                                     label="Deaths during Combat (Max 10 Marks)"
                                     value={trainee.assessment?.weaponHandling?.deaths || 0}
-                                    onChange={(e) => handleAssessmentChange('weaponHandling', 'deaths', e.target.value)}
+                                    onChange={(e) => handleAssessmentChange('weaponHandling', 'deaths', parseInt(e.target.value))}
                                     options={[
                                         { value: 0, label: '0 Deaths (10 Marks)' },
                                         { value: 1, label: '1 Death (7 Marks)' },
@@ -418,7 +434,7 @@
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
             const [coTrainerRobloxUsername, setCoTrainerRobloxUsername] = useState('');
             const [trainees, setTrainees] = useState([initialTrainee]);
-            const [submissionStatus, setSubmissionStatus] = useState(null); // null, 'loading', 'success', 'error'
+            const [submissionStatus, setSubmissionStatus] = useState(null); 
             const [error, setError] = useState(null);
 
             const addTrainee = () => {
@@ -457,7 +473,7 @@
                     } else if (trainee.status === 'PENDING') {
                         return `Final status must be set for all trainees.`;
                     } else { // PASSED/FAILED check
-                         if (!trainee.assessment.knowledgeScore) {
+                         if (trainee.assessment?.knowledgeScore === '') {
                             return `Knowledge Score (0-10) is required for ${trainee.traineeRobloxUsername}.`;
                         }
                     }
@@ -480,14 +496,7 @@
                     coTrainerRobloxUsername: coTrainerRobloxUsername.trim() || null,
                     timestamp: new Date().toISOString(),
                     trainees: trainees.map(t => {
-                        const marks = t.status !== 'DISQUALIFIED' && t.status !== 'PENDING' ? t.assessment.knowledgeScore + 
-                            (t.assessment.moderation.goodSpag === 'yes' ? 5 : 0) + 
-                            (t.assessment.moderation.healedTrainer === 'yes' ? 5 : 0) + 
-                            (t.assessment.moderation.askedForProof === 'yes' ? 5 : 0) + 
-                            (t.assessment.moderation.punishedCorrectly === 'yes' ? 5 : 0) +
-                            (t.assessment.weaponHandling.deaths === 0 ? 10 : t.assessment.weaponHandling.deaths === 1 ? 7 : t.assessment.weaponHandling.deaths === 2 ? 3 : 0) +
-                            (t.assessment.weaponHandling.spottedSniper === 'yes' ? 10 : 0)
-                            : 0;
+                        const marks = calculateTraineeMarks(t); // Use the fixed core function
 
                         return {
                             traineeDiscordId: t.traineeDiscordId,
@@ -807,12 +816,12 @@
             );
         };
 
-        // Announcement Tab Component (UPDATED)
+        // Announcement Tab Component 
         const AnnounceTrainingTab = ({ db, userId }) => {
              const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
              const [time, setTime] = useState('');
              const [additionalInfo, setAdditionalInfo] = useState('');
-             const [submissionStatus, setSubmissionStatus] = useState(null); // null, 'loading', 'success', 'error'
+             const [submissionStatus, setSubmissionStatus] = useState(null); 
              const [error, setError] = useState(null);
              
              // Auto-populate date to current date/time
