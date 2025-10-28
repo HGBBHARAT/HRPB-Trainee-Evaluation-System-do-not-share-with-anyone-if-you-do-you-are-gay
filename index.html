@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRPB Trainee Evaluation </title>
+    <title>.GitHub Trainee Evaluation Form (Complete)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -142,6 +142,18 @@
             return { id: Math.random().toString(36).substring(2, 9) };
         };
 
+        // --- NEW/MODIFIED Utility Function to check if a trainee would pass/fail ---
+        const determineStatus = (trainee) => {
+            if (trainee.status === 'disqualified') return 'DISQUALIFIED';
+            if (trainee.status !== 'pending') return trainee.status.toUpperCase();
+            
+            // Check if required fields are filled to make a final determination
+            if (!checkTraineeRequiredFields(trainee)) return 'PENDING';
+
+            // Determine PASS/FAIL based on knowledge score
+            return Number(trainee.knowledgeScore) >= 7 ? 'PASSED' : 'FAILED';
+        };
+
 
         // --- ToggleGroup component (required by the form) ---
         const ToggleGroup = ({ label, value, onChange, required = true }) => {
@@ -205,12 +217,10 @@
         );
 
 
-        // --- EvaluationForm (Submit Results Tab Content) ---
-        // (Other components like TraineeAssessmentSection, TraineeActionButtons, DisqualificationModal are assumed to be defined here)
-        
-        const TraineeActionButtons = ({ trainee, index, onFinalize, onDisqualify, isValid }) => {
+        // --- MODIFIED TraineeActionButtons component (only keeps Disqualify for context) ---
+        const TraineeActionButtons = ({ trainee, index, onDisqualify, isDisqualifyValid }) => {
             let statusClasses = "text-sm font-semibold px-3 py-1 rounded-full";
-            let statusText = "";
+            let statusText = determineStatus(trainee);
 
             if (trainee.status === 'pending') {
                 statusClasses += " bg-slate-600 text-white";
@@ -229,47 +239,30 @@
                 statusText = "Processing...";
             }
             
-            const isReadyForFinalize = isValid && trainee.status === 'pending';
-            const isReadyForDisqualify = 
-                trainee.status === 'pending' && 
-                trainee.traineeDiscordId.trim() && 
-                trainee.traineeRobloxUsername.trim() && 
-                trainee.traineeName.trim();
+            // Check if essential fields for disqualification are filled
+            const isReadyForDisqualify = isDisqualifyValid && trainee.status === 'pending';
 
             return (
                 <div className="pt-4 border-t border-slate-600">
-                    <h4 className="text-lg font-bold text-white mb-3">Final Action</h4>
-                    <div className="flex items-center justify-between">
-                        <span className={statusClasses}>{statusText}</span>
-                        <div className="flex space-x-3">
-                            {trainee.status === 'pending' && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={onDisqualify}
-                                        disabled={!isReadyForDisqualify || trainee.status === 'processing'}
-                                        className="flex items-center bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
-                                    >
-                                        <XCircle className="w-4 h-4 mr-1" /> Disqualify
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={onFinalize}
-                                        disabled={!isReadyForFinalize || trainee.status === 'processing'}
-                                        className="flex items-center bg-emerald-700 hover:bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
-                                    >
-                                        <Save className="w-4 h-4 mr-1" /> Save Result
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                    <h4 className="text-lg font-bold text-white mb-3">Trainee Status: <span className={statusClasses}>{statusText}</span></h4>
+                    
+                    {trainee.status === 'pending' && (
+                        <button
+                            type="button"
+                            onClick={onDisqualify}
+                            disabled={!isReadyForDisqualify || trainee.status === 'processing'}
+                            // STRETCHED DISQUALIFY BUTTON
+                            className="flex items-center justify-center w-full bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
+                        >
+                            <XCircle className="w-4 h-4 mr-1" /> Disqualify Trainee
+                        </button>
+                    )}
                 </div>
             );
         };
 
-        const TraineeAssessmentSection = ({ trainee, index, onUpdate, onRemove, onFinalize, onDisqualify, isRemovable, requiredFieldsValid }) => (
+
+        const TraineeAssessmentSection = ({ trainee, index, onUpdate, onRemove, onDisqualify, isRemovable, requiredFieldsValid, isDisqualifyValid }) => (
             <section 
                 className="space-y-4 p-5 bg-slate-700 rounded-xl border border-slate-600 relative opacity-100 transition-opacity duration-300"
                 style={trainee.status !== 'pending' ? {opacity: 0.7} : {}} 
@@ -435,9 +428,9 @@
                 <TraineeActionButtons 
                     trainee={trainee}
                     index={index}
-                    onFinalize={onFinalize}
+                    // onFinalize is removed
                     onDisqualify={onDisqualify}
-                    isValid={requiredFieldsValid}
+                    isDisqualifyValid={isDisqualifyValid}
                 />
             </section>
         );
@@ -547,6 +540,7 @@
             const [error, setError] = useState(null);
             const [success, setSuccess] = useState(false);
             const [traineeToDisqualifyIndex, setTraineeToDisqualifyIndex] = useState(null);
+            const [copyStatus, setCopyStatus] = useState(null);
             const isDisqualificationModalOpen = traineeToDisqualifyIndex !== null;
 
             // --- Trainee Management (Max 5) ---
@@ -620,44 +614,8 @@
                 batchId: crypto.randomUUID(),
             });
 
-            // --- Per-Trainee Submission Logic (PASS/FAIL) ---
-            const handleFinalizeTrainee = async (index) => {
-                setError(null);
-                setSuccess(false);
-                const trainee = trainees[index];
-
-                if (!trainerRobloxUsername.trim()) {
-                    setError("Please enter the Trainer's Roblox Username.");
-                    return;
-                }
-                if (coTrainers.length === 1 && !coTrainers[0].username.trim()) {
-                    setError("Please fill out the Co-Trainer's Roblox Username or remove the field.");
-                    return;
-                }
-                if (!checkTraineeRequiredFields(trainee)) {
-                    setError(`Please fill out all required fields for Trainee #${index + 1}.`);
-                    return;
-                }
-
-                updateTrainee(index, 'status', 'processing');
-                setIsSaving(true);
-                try {
-                    const finalStatus = Number(trainee.knowledgeScore) >= 7 ? 'PASSED' : 'FAILED';
-                    const evaluationData = generateEvaluationData(trainee, finalStatus);
-                    await mockAddDoc(evaluationData);
-                    // Mock the submission
-                    updateTrainee(index, 'status', finalStatus.toLowerCase());
-                    setSuccess(`Results for Trainee #${index + 1} (${finalStatus}) saved successfully!`);
-                    setTimeout(() => setSuccess(false), 5000);
-                } catch (err) {
-                    console.error("Error saving evaluation:", err);
-                    setError(`Failed to save results for Trainee #${index + 1}. Check console for details.`);
-                    updateTrainee(index, 'status', 'pending');
-                } finally {
-                    setIsSaving(false);
-                }
-            };
-
+            // --- Individual Trainee Submission Logic is REMOVED ---
+            
             // --- Disqualification Logic ---
             const openIndividualDisqualificationModal = (index) => {
                 if (!trainerRobloxUsername.trim()) {
@@ -682,7 +640,7 @@
                 try {
                     const evaluationData = generateEvaluationData(trainee, 'DISQUALIFIED', proofLink, reason);
                     await mockAddDoc(evaluationData);
-                    // Mock the submission
+                    
                     updateTrainee(index, 'status', 'disqualified');
                     setSuccess(`Trainee #${index + 1} successfully DISQUALIFIED.`);
                     setTimeout(() => setSuccess(false), 5000);
@@ -695,6 +653,57 @@
                     setTraineeToDisqualifyIndex(null);
                 }
             };
+            
+            // --- NEW: Generate Copyable Results Format ---
+            const generateCopyFormat = () => {
+                const trainer = trainerRobloxUsername || 'N/A';
+                const coTrainer = coTrainers.length && coTrainers[0].username ? coTrainers[0].username : 'N/A';
+                
+                let resultText = `**Training Evaluation Results**\n`;
+                resultText += `**Trainer:** ${trainer}\n`;
+                resultText += `**Co-Trainer:** ${coTrainer}\n\n`;
+                resultText += `--- Trainee Results ---\n`;
+
+                trainees.forEach((t, index) => {
+                    const status = determineStatus(t);
+                    const knowledgeScore = t.knowledgeScore || 'N/A';
+
+                    resultText += `\n**Trainee ${index + 1}: ${t.traineeName || 'N/A'} (@${t.traineeDiscordId || 'N/A'})**\n`;
+                    resultText += `**Roblox User:** ${t.traineeRobloxUsername || 'N/A'}\n`;
+                    resultText += `**FINAL STATUS:** ${status}\n`;
+                    
+                    if (status === 'PASSED' || status === 'FAILED' || (status === 'PENDING' && checkTraineeRequiredFields(t))) {
+                        resultText += `Knowledge Score: ${knowledgeScore}/10\n`;
+                        resultText += `Mod Scene:\n`;
+                        resultText += `- English: ${t.modGoodEnglish === true ? 'Yes' : t.modGoodEnglish === false ? 'No' : 'N/A'}\n`;
+                        resultText += `- Proof: ${t.modAskedForProof === true ? 'Yes' : t.modAskedForProof === false ? 'No' : 'N/A'}\n`;
+                        resultText += `- Healed: ${t.modHealedTrainer === true ? 'Yes' : t.modHealedTrainer === false ? 'No' : 'N/A'}\n`;
+                        resultText += `- Punishment: ${t.modPunishedCorrectly === true ? 'Correct' : t.modPunishedCorrectly === false ? 'Incorrect' : 'N/A'}\n`;
+                        resultText += `Weapon Deaths: ${t.weaponDeaths || 'N/A'}\n`;
+                        resultText += `Killed Sniper: ${t.weaponKilledSniper === true ? 'Yes' : t.weaponKilledSniper === false ? 'No' : 'N/A'}\n`;
+                    } else if (status === 'DISQUALIFIED') {
+                        resultText += `Disqualified at time of entry. Requires trainer to submit proof.\n`;
+                    } else if (status === 'PENDING') {
+                         resultText += `Status: PENDING - Not all required fields were filled.\n`;
+                    }
+                });
+                
+                return resultText;
+            };
+            
+            // --- NEW: Handle Copy Action ---
+            const handleCopyResults = () => {
+                const formatText = generateCopyFormat();
+                navigator.clipboard.writeText(formatText).then(() => {
+                    setCopyStatus('success');
+                    setTimeout(() => setCopyStatus(null), 3000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    setCopyStatus('error');
+                    setTimeout(() => setCopyStatus(null), 3000);
+                });
+            };
+
 
             // Calculate Summary Status for the indicator
             const totalTrainees = trainees.length;
@@ -711,7 +720,7 @@
                             <List className="w-6 h-6 mr-2 text-sky-400" /> Submit Training Results
                         </h2>
                         <p className="text-slate-400 mb-6 border-b border-slate-700 pb-4"> 
-                            Evaluate each trainee individually. Results are posted on submission. (Mock API in use) 
+                            Enter trainee data below. Use the **Copy Results** button at the bottom to generate the postable summary.
                         </p>
 
                         {/* Trainer Information Section */}
@@ -781,23 +790,41 @@
                                     index={index}
                                     onUpdate={updateTrainee}
                                     onRemove={() => removeTrainee(index)}
-                                    onFinalize={() => handleFinalizeTrainee(index)}
                                     onDisqualify={() => openIndividualDisqualificationModal(index)}
                                     isRemovable={trainees.length > 1}
                                     requiredFieldsValid={checkTraineeRequiredFields(trainee)}
+                                    isDisqualifyValid={trainee.traineeDiscordId.trim() && trainee.traineeRobloxUsername.trim() && trainee.traineeName.trim()}
                                 />
                             ))}
                         </div>
 
-                        <div className="flex justify-center mt-8">
+                        {/* GLOBAL ACTION BUTTONS (NEW LOCATION) */}
+                        <div className="flex flex-col space-y-4 justify-center mt-8 pt-4 border-t border-slate-700">
                             <button
                                 type="button"
                                 onClick={addTrainee}
                                 disabled={trainees.length >= 5 || isSaving}
-                                className="flex items-center px-6 py-3 rounded-lg font-semibold text-white bg-indigo-700 hover:bg-indigo-600 transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg"
+                                className="flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-indigo-700 hover:bg-indigo-600 transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg"
                             >
                                 <Plus className="w-5 h-5 mr-2" /> Add Trainee (Max 5)
                             </button>
+                            
+                            {/* NEW: Copy Results Button */}
+                            <button
+                                onClick={handleCopyResults}
+                                disabled={isSaving || !trainerRobloxUsername.trim()}
+                                className={`flex items-center justify-center w-full px-6 py-3 rounded-lg font-semibold text-white transition duration-200 
+                                    ${copyStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-sky-600 hover:bg-sky-700'}
+                                    ${copyStatus === 'error' ? 'bg-red-600 hover:bg-red-700' : ''}
+                                    disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg
+                                `}
+                            >
+                                <Copy className="w-5 h-5 mr-2" />
+                                {copyStatus === 'success' ? 'Results Copied!' : copyStatus === 'error' ? 'Copy Failed!' : 'Copy Results for Discord'}
+                            </button>
+                            {copyStatus === 'success' && (
+                                <p className="text-sm text-green-400 text-center">Paste the results directly into Discord.</p>
+                            )}
                         </div>
                         
                         {/* Status/Error Messages */}
@@ -830,7 +857,7 @@
         };
         
 
-        // --- NEW/MODIFIED AnnounceTrainingTab Component ---
+        // --- MODIFIED AnnounceTrainingTab Component (From previous step) ---
         const AnnounceTrainingTab = ({ db, userId }) => {
             const { useState } = React;
             const [trainerName, setTrainerName] = useState('');
