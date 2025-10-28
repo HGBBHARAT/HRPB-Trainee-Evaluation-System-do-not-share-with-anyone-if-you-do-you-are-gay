@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRPB Trainee Evaluation</title>
+    <title>.GitHub Trainee Evaluation Form (Final)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -49,7 +49,8 @@
         const { useState, useEffect, useCallback, useMemo } = React;
 
         // --- CRITICAL: API CONFIGURATION ---
-        const API_ENDPOINT = "http://s9.katabump.com:5000"; 
+        // CHANGED TO LOCALHOST (127.0.0.1:5000) for local testing
+        const API_ENDPOINT = "http://127.0.0.1:5000"; 
         const MAX_TRAINEES = 5;
 
         // --- MOCKED LUCIDE ICON COMPONENTS ---
@@ -455,7 +456,7 @@
             );
         };
 
-        // Evaluation Form Component (Dashboard Key removed)
+        // Evaluation Form Component (Dashboard Key removed, API Endpoint updated)
         const EvaluationForm = ({ db, userId }) => {
             const initialTrainee = {
                 traineeDiscordId: '',
@@ -466,7 +467,7 @@
             };
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
             const [coTrainerRobloxUsername, setCoTrainerRobloxUsername] = useState('');
-            // const [dashboardKey, setDashboardKey] = useState(''); // REMOVED
+            // Dashboard Key/Password state removed
             const [trainees, setTrainees] = useState([initialTrainee]);
             const [submissionStatus, setSubmissionStatus] = useState(null); 
             const [error, setError] = useState(null);
@@ -492,9 +493,6 @@
                 if (!trainerRobloxUsername.trim()) {
                     return "Trainer Roblox Username is required.";
                 }
-                // if (!dashboardKey.trim()) { // REMOVED VALIDATION
-                //     return "Dashboard Key/Password is required for submission.";
-                // }
                 if (trainees.length === 0) {
                     return "At least one trainee must be added.";
                 }
@@ -584,7 +582,6 @@
                         // Reset form fields
                         setTrainerRobloxUsername('');
                         setCoTrainerRobloxUsername('');
-                        // setDashboardKey(''); // REMOVED
                         setTrainees([initialTrainee]);
                     } else {
                         console.error('API Post Failed:', response.status);
@@ -620,7 +617,6 @@
                                 value={coTrainerRobloxUsername} 
                                 onChange={(e) => setCoTrainerRobloxUsername(e.target.value)}
                             />
-                            {/* Dashboard Key Field Removed */}
                         </div>
                     </div>
 
@@ -682,7 +678,7 @@
             );
         };
 
-        // Voice Verification Component (Dashboard Key removed)
+        // Voice Verification Component (Dashboard Key removed, API Endpoint updated)
         const VoiceVerificationTab = ({ db, userId }) => {
             const initialTrainee = {
                 traineeDiscordId: '',
@@ -690,7 +686,7 @@
                 ageRange: '13-15' 
             };
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
-            // const [dashboardKey, setDashboardKey] = useState(''); // REMOVED
+            // Dashboard Key/Password state removed
             const [trainees, setTrainees] = useState([initialTrainee]);
             const [submissionStatus, setSubmissionStatus] = useState(null);
             const [error, setError] = useState(null);
@@ -710,7 +706,6 @@
 
             const validateForm = () => {
                 if (!trainerRobloxUsername.trim()) return "Trainer Roblox Username is required.";
-                // if (!dashboardKey.trim()) return "Dashboard Key/Password is required for submission."; // REMOVED VALIDATION
                 if (trainees.length === 0) return "At least one trainee must be added.";
                 for (const trainee of trainees) {
                     if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername) {
@@ -751,7 +746,6 @@
                         setSubmissionStatus('success');
                         setTrainees([initialTrainee]); // Reset form
                         setTrainerRobloxUsername('');
-                        // setDashboardKey(''); // REMOVED
                     } else {
                         console.error('API Post Failed:', response.status);
                         const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
@@ -824,7 +818,6 @@
                                 onChange={(e) => setTrainerRobloxUsername(e.target.value)}
                                 required
                             />
-                            {/* Dashboard Key Field Removed */}
                         </div>
                     </div>
 
@@ -885,12 +878,12 @@
             );
         };
 
-        // Announcement Tab Component (Dashboard Key removed)
+        // Announcement Tab Component (Dashboard Key removed, API Endpoint updated)
         const AnnounceTrainingTab = ({ db, userId }) => {
              const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
              const [time, setTime] = useState('');
              const [additionalInfo, setAdditionalInfo] = useState('');
-             // const [dashboardKey, setDashboardKey] = useState(''); // REMOVED
+             // Dashboard Key/Password state removed
              const [submissionStatus, setSubmissionStatus] = useState(null); 
              const [error, setError] = useState(null);
              
@@ -907,7 +900,6 @@
                  setError(null);
                  
                  if (!trainerRobloxUsername.trim() || !time.trim() || !additionalInfo.trim()) {
-                    // || !dashboardKey.trim()) { // REMOVED VALIDATION
                      setSubmissionStatus('error');
                      setError('Trainer Name, Time, and Info are required.');
                      setTimeout(() => setSubmissionStatus(null), 3000);
@@ -932,7 +924,6 @@
                     if (response.ok) {
                         setSubmissionStatus('success');
                         setAdditionalInfo(''); 
-                        // setDashboardKey(''); // REMOVED
                     } else {
                         console.error('API Post Failed:', response.status);
                         const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
@@ -975,7 +966,6 @@
                             onChange={(e) => setTime(e.target.value)}
                             required
                         />
-                         {/* Dashboard Key Field Removed */}
                     </div>
                     
                     <div className="flex flex-col space-y-1">
