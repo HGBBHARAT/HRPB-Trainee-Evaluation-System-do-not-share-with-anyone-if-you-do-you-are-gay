@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRPB Training Evaluation</title>
+    <title>HRPB Trainee Evaluation for Staff Team</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     <script>
         tailwind.config = {
@@ -18,10 +20,12 @@
                 extend: {
                     colors: {
                         'slate': {
-                            700: '#334155', // Customizing the palette used in the JSX
+                            700: '#334155',
                             800: '#1e293b',
                             900: '#0f172a',
-                        }
+                        },
+                        'hrp-green': '#10b981', // Emerald 500
+                        'hrp-red': '#ef4444',   // Red 500
                     }
                 }
             }
@@ -33,1155 +37,864 @@
         body {
             background-color: #0f172a; /* slate-900 */
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        /* Hide number input spinners */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-          -webkit-appearance: none;
-          margin: 0; 
+        /* Custom scrollbar for better dark mode look */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
         }
-        /* Style for date/time inputs in dark mode */
-        input[type="date"], input[type="time"] {
-             color-scheme: dark; /* Force dark scheme for the picker UI */
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #1e293b; /* slate-800 */
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155; /* slate-700 */
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569; /* slate-600 */
         }
     </style>
 </head>
 <body>
-
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+        const { useState, useEffect, useMemo } = React;
+
+        // ====================================================================
+        // ICON COMPONENTS (Lucide)
+        // ====================================================================
+
+        const createIconComponent = (iconName, size = 20) => {
+            return (props) => {
+                const iconElement = React.useMemo(() => {
+                    const iconFn = lucide.icons[iconName];
+                    if (!iconFn) return null;
+                    return iconFn({ width: size, height: size, ...props });
+                }, [props]);
+                return iconElement;
+            };
+        };
+
+        const List = createIconComponent('List');
+        const Volume2 = createIconComponent('Volume2');
+        const Mic = createIconComponent('Mic');
+        const ClipboardCheck = createIconComponent('ClipboardCheck');
+        const ClipboardCopy = createIconComponent('ClipboardCopy');
+        const X = createIconComponent('X');
+        const Check = createIconComponent('Check');
+        const Loader2 = createIconComponent('Loader2');
+        const AlertTriangle = createIconComponent('AlertTriangle');
+        const Plus = createIconComponent('Plus');
+        const Trash2 = createIconComponent('Trash2');
+
+
+        // ====================================================================
+        // UTILITY COMPONENTS
+        // ====================================================================
+
+        const InputGroup = ({ label, value, onChange, placeholder = "", type = "text", required = false, step = null, min = null, max = null }) => (
+            <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium text-gray-300">{label}{required && <span className="text-hrp-red">*</span>}</label>
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    required={required}
+                    step={step}
+                    min={min}
+                    max={max}
+                    className="w-full px-3 py-2 text-sm text-white bg-slate-800 border border-slate-700 rounded-md focus:ring-hrp-green focus:border-hrp-green transition duration-150"
+                />
+            </div>
+        );
         
-        // --- Mocking Lucide Icons ---
-        const User = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const Loader2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" /></svg>;
-        const List = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
-        const XCircle = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
-        const Plus = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
-        const Save = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-2a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2"/><path d="M7 3v4h10"/></svg>;
-        const Trash2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
-        const Shield = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
-        const GitBranch = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>;
-        const Target = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-        const AlertTriangle = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
-        const MessageSquare = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-        const Mic = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>;
-        const Calendar = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>);
-        const Copy = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/><rect x="2" y="2" width="20" height="20" rx="2" ry="2" style={{opacity: 0}} /></svg>);
-        const AlertCircle = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>);
-        const Clock = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const CheckboxGroup = ({ label, checked, onChange }) => (
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => onChange(e.target.checked)}
+                    className="w-4 h-4 text-hrp-green bg-slate-800 border-slate-700 rounded focus:ring-hrp-green"
+                />
+                <label className="text-sm font-medium text-gray-300">{label}</label>
+            </div>
+        );
 
-        // --- GLOBAL CONSTANTS ---
-        const DISCORD_ROLE_ID = "1381367978611839136";
-
-        const initialTraineeState = {
-            traineeDiscordId: '',
-            traineeRobloxUsername: '',
-            traineeName: '',
-            knowledgeScore: '',
-            knowledgeNotes: '',
-            modGoodEnglish: null, 
-            modAskedForProof: null, 
-            modHealedTrainer: null, 
-            modPunishedCorrectly: null, 
-            modNotes: '',
-            weaponDeaths: '',
-            weaponKilledSniper: null,
-            status: 'pending', // 'pending', 'passed', 'failed', 'disqualified', 'processing'
-        };
+        const RoleInput = ({ value, onChange, placeholder = "Roblox Username" }) => (
+            <InputGroup
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+            />
+        );
         
-        // --- MODIFIED initialVoiceTraineeState ---
-        const initialVoiceTraineeState = {
-            traineeDiscordId: '',
-            traineeRobloxUsername: '',
-            ageRange: '', // New field for age range
-            status: 'pending', // 'pending'
-        };
-
-        const WeaponDeathOptions = [
-            { value: '', label: 'Select death count' },
-            { value: '0', label: '0 Times Died' },
-            { value: '1', label: '1 Time Died' },
-            { value: '2', label: '2 Times Died' },
-            { value: '3', label: '3 Times Died' },
-            { value: '3+', label: '3+ Times Died' },
-        ];
-        const ScoreOptions = Array.from({ length: 11 }, (_, i) => i).map(n => ({
-            value: n.toString(),
-            label: n.toString(),
-        }));
+        // ====================================================================
+        // TRAINEE FORM COMPONENTS
+        // ====================================================================
         
-        // --- NEW Age Range Options ---
-        const AgeRangeOptions = [
-             { value: '', label: 'Select age range' },
-             { value: '>13', label: '>13' },
-             { value: '13-15', label: '13-15' },
-             { value: '15-18', label: '15-18' },
-             { value: '18+', label: '18+' },
-        ];
-
-        // --- Utility Functions ---
-
-        const checkTraineeRequiredFields = (trainee) => {
-            if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername || !trainee.traineeName) return false;
-            if (trainee.knowledgeScore === '' || 
-                trainee.modGoodEnglish === null || 
-                trainee.modAskedForProof === null || 
-                trainee.modHealedTrainer === null || 
-                trainee.modPunishedCorrectly === null || 
-                trainee.weaponDeaths === '' || 
-                trainee.weaponKilledSniper === null) 
-            {
-                return false;
-            }
-            return true;
-        };
-        
-        // --- MODIFIED checkVoiceTraineeRequiredFields ---
-        const checkVoiceTraineeRequiredFields = (trainee) => {
-             if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername) return false;
-             if (trainee.ageRange === '') return false;
-             return true;
-        };
-
-        const mockServerTimestamp = () => new Date().toISOString();
-        const mockAddDoc = async (data) => {
-            console.log("MOCK API CALL: Evaluation Submitted. Data:", data);
-            await new Promise(resolve => setTimeout(resolve, 500)); 
-            // In a real application, you would send this to your webhook URL here.
-            return { id: Math.random().toString(36).substring(2, 9) };
-        };
-
         const determineStatus = (trainee) => {
             if (trainee.status === 'disqualified') return 'DISQUALIFIED';
-            if (trainee.status !== 'pending') return trainee.status.toUpperCase();
-            
-            if (!checkTraineeRequiredFields(trainee)) return 'PENDING';
-
-            return Number(trainee.knowledgeScore) >= 7 ? 'PASSED' : 'FAILED';
-        };
-
-
-        // --- ToggleGroup component ---
-        const ToggleGroup = ({ label, value, onChange, required = true }) => {
-            
-            const handleToggle = (newValue) => {
-                if (value === newValue) {
-                    onChange(null);
-                } else {
-                    onChange(newValue);
-                }
-            };
-
-            const baseClasses = "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition duration-150 border";
-            const yesClasses = value === true 
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-md hover:bg-emerald-500" 
-                : "bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600";
-            const noClasses = value === false 
-                ? "bg-rose-600 border-rose-600 text-white shadow-md hover:bg-rose-500" 
-                : "bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600";
-            const isRequiredClass = required && value === null ? 'border-dashed border-rose-500' : 'border-slate-700';
-
-            return (
-                <div className="flex flex-col space-y-2">
-                    <span className={`text-sm font-medium ${required ? 'text-slate-200' : 'text-slate-400'}`}>
-                        {label}
-                        {required && value === null && <span className="text-rose-500 ml-1"> (Required)</span>}
-                    </span>
-                    <div className={`flex space-x-3 p-1 rounded-xl bg-slate-700 ${isRequiredClass}`}>
-                        <button
-                            type="button"
-                            onClick={() => handleToggle(true)}
-                            className={`${baseClasses} ${yesClasses}`}
-                        >
-                            Yes
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleToggle(false)}
-                            className={`${baseClasses} ${noClasses}`}
-                        >
-                            No
-                        </button>
-                    </div>
-                </div>
-            );
+            if (trainee.knowledgeScore >= 7) return 'PASSED';
+            if (trainee.knowledgeScore < 7) return 'FAILED';
+            return 'PENDING';
         };
         
-        // --- TabButton Component ---
-        const TabButton = ({ icon: Icon, label, isActive, onClick }) => (
-            <button
-                className={`flex items-center text-sm font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${
-                    isActive 
-                        ? 'text-white bg-indigo-600 shadow-lg' 
-                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }`}
-                onClick={onClick}
-            >
-                <Icon className="w-5 h-5 mr-2" />
-                {label}
-            </button>
-        );
-
-
-        // --- TraineeActionButtons component (Status and Disqualify) ---
-        const TraineeActionButtons = ({ trainee, index, onDisqualify, isDisqualifyValid }) => {
-            let statusClasses = "text-sm font-semibold px-3 py-1 rounded-full";
-            let statusText = determineStatus(trainee);
-
-            if (trainee.status === 'pending') {
-                statusClasses += " bg-slate-600 text-white";
-                statusText = "Pending Evaluation";
-            } else if (trainee.status === 'passed') {
-                statusClasses += " bg-emerald-600 text-white";
-                statusText = "PASSED";
-            } else if (trainee.status === 'failed') {
-                statusClasses += " bg-yellow-600 text-white";
-                statusText = "FAILED";
-            } else if (trainee.status === 'disqualified') {
-                statusClasses += " bg-rose-600 text-white";
-                statusText = "DISQUALIFIED";
-            } else if (trainee.status === 'processing') {
-                statusClasses += " bg-sky-600 text-white";
-                statusText = "Processing...";
-            }
+        const TraineeForm = ({ trainee, index, updateTrainee, removeTrainee }) => {
             
-            const isReadyForDisqualify = isDisqualifyValid && trainee.status === 'pending';
+            const handleInputChange = (field, value) => {
+                updateTrainee(index, { ...trainee, [field]: value });
+            };
 
-            return (
-                <div className="pt-4 border-t border-slate-600">
-                    <h4 className="text-lg font-bold text-white mb-3">Trainee Status: <span className={statusClasses}>{statusText}</span></h4>
+            const handleDisqualify = () => {
+                if (trainee.status === 'disqualified') {
+                    // Undisqualify
+                    updateTrainee(index, { 
+                        ...trainee, 
+                        status: 'pending', 
+                        disqualificationReason: '', 
+                        disqualificationProof: '' 
+                    });
+                } else {
+                    // Disqualify: Open a prompt/modal or just set the status
+                    const reason = prompt("Enter Disqualification Reason:");
+                    if (reason === null) return;
+                    const proof = prompt("Enter Proof Link (Image/Video URL):");
                     
-                    {trainee.status === 'pending' && (
-                        <button
-                            type="button"
-                            onClick={onDisqualify}
-                            disabled={!isReadyForDisqualify || trainee.status === 'processing'}
-                            // STRETCHED DISQUALIFY BUTTON
-                            className="flex items-center justify-center w-full bg-rose-700 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-md"
-                        >
-                            <XCircle className="w-4 h-4 mr-1" /> Disqualify Trainee
-                        </button>
-                    )}
-                </div>
-            );
-        };
-
-
-        const TraineeAssessmentSection = ({ trainee, index, onUpdate, onRemove, onDisqualify, isRemovable, isDisqualifyValid }) => (
-            <section 
-                className="space-y-4 p-5 bg-slate-700 rounded-xl border border-slate-600 relative opacity-100 transition-opacity duration-300"
-                style={trainee.status !== 'pending' ? {opacity: 0.7} : {}} 
-            >
-                <h3 className="text-xl font-bold text-white mb-4 flex justify-between items-center">
-                    Trainee #{index + 1}
-                    {isRemovable && (
-                        <button
-                            type="button"
-                            onClick={onRemove}
-                            className="text-rose-400 hover:text-rose-300 p-1 rounded-full hover:bg-slate-600 transition"
-                            aria-label={`Remove Trainee ${index + 1}`}
-                        >
-                            <Trash2 className="w-5 h-5" />
-                        </button>
-                    )}
-                </h3>
-                
-                {/* Trainee Information - FIX: Added index to onUpdate calls */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-slate-600">
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-slate-200">
-                            Discord ID (Numbers Only) <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            placeholder="123456789012345678"
-                            value={trainee.traineeDiscordId}
-                            onChange={(e) => onUpdate(index, 'traineeDiscordId', e.target.value)}
-                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                            required
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-slate-200">
-                            Roblox Username <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Trainee's Roblox username"
-                            value={trainee.traineeRobloxUsername}
-                            onChange={(e) => onUpdate(index, 'traineeRobloxUsername', e.target.value)}
-                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                            required
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-slate-200">
-                            Name <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Trainee's display name"
-                            value={trainee.traineeName}
-                            onChange={(e) => onUpdate(index, 'traineeName', e.target.value)}
-                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                            required
-                        />
-                    </div>
-                </div>
-
-                {/* Knowledge Assessment */}
-                <div className="space-y-4 pt-4">
-                    <h4 className="text-lg font-bold text-white flex items-center">
-                        <GitBranch className="w-4 h-4 mr-2 text-sky-400" />
-                        Knowledge
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label htmlFor={`knowledgeScore-${index}`} className="block text-sm font-medium text-slate-200">
-                                Knowledge Score (0-10) <span className="text-rose-500">*</span>
-                            </label>
-                            <select
-                                id={`knowledgeScore-${index}`}
-                                value={trainee.knowledgeScore}
-                                onChange={(e) => onUpdate(index, 'knowledgeScore', e.target.value)}
-                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:ring-sky-500 focus:border-sky-500 appearance-none"
-                                required
-                            >
-                                <option value="" disabled>Select score</option>
-                                {ScoreOptions.map(option => (
-                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor={`knowledgeNotes-${index}`} className="block text-sm font-medium text-slate-200">
-                                Notes (Optional)
-                            </label>
-                            <textarea
-                                id={`knowledgeNotes-${index}`}
-                                placeholder="Additional notes..."
-                                value={trainee.knowledgeNotes}
-                                onChange={(e) => onUpdate(index, 'knowledgeNotes', e.target.value)}
-                                rows="1"
-                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500 resize-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Moderation Scene Assessment - FIX: Added index to onUpdate calls */}
-                <div className="space-y-4 pt-4 border-t border-slate-600">
-                    <h4 className="text-lg font-bold text-white flex items-center">
-                        <Shield className="w-4 h-4 mr-2 text-sky-400" />
-                        Moderation Scene
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <ToggleGroup label="Did the trainee use good English and SPAG?" value={trainee.modGoodEnglish} onChange={(val) => onUpdate(index, 'modGoodEnglish', val)} />
-                        <ToggleGroup label="Did they heal the trainer?" value={trainee.modHealedTrainer} onChange={(val) => onUpdate(index, 'modHealedTrainer', val)} />
-                        <ToggleGroup label="Did they ask for proof?" value={trainee.modAskedForProof} onChange={(val) => onUpdate(index, 'modAskedForProof', val)} />
-                        <ToggleGroup label="Did they punish correctly?" value={trainee.modPunishedCorrectly} onChange={(val) => onUpdate(index, 'modPunishedCorrectly', val)} />
-                    </div>
-                    <div className="space-y-1 pt-2">
-                        <label htmlFor={`modNotes-${index}`} className="block text-sm font-medium text-slate-200">
-                            Moderation Notes (Optional)
-                        </label>
-                        <textarea
-                            id={`modNotes-${index}`}
-                            placeholder="Additional notes..."
-                            value={trainee.modNotes}
-                            onChange={(e) => onUpdate(index, 'modNotes', e.target.value)}
-                            rows="2"
-                            className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500 resize-none"
-                        />
-                    </div>
-                </div>
-                
-                {/* Weapon Handling Assessment - FIX: Added index to onUpdate calls */}
-                <div className="space-y-4 pt-4 border-t border-slate-600">
-                    
-                    <h4 className="text-lg font-bold text-white flex items-center">
-                        <Target className="w-4 h-4 mr-2 text-red-400" />
-                        Weapon Handling
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label htmlFor={`weaponDeaths-${index}`} className="block text-sm font-medium text-slate-200">
-                                Number of times died <span className="text-rose-500">*</span>
-                            </label>
-                            <select
-                                id={`weaponDeaths-${index}`}
-                                value={trainee.weaponDeaths}
-                                onChange={(e) => onUpdate(index, 'weaponDeaths', e.target.value)}
-                                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:ring-red-500 focus:border-red-500 appearance-none"
-                                required
-                            >
-                                {WeaponDeathOptions.map(option => (
-                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <ToggleGroup 
-                            label="Did the trainee kill the sniper?" 
-                            value={trainee.weaponKilledSniper} 
-                            onChange={(val) => onUpdate(index, 'weaponKilledSniper', val)} 
-                            required={true}
-                        />
-                    </div>
-                </div>
-                
-                {/* Per-Trainee Action Buttons and Status */}
-                <TraineeActionButtons 
-                    trainee={trainee}
-                    index={index}
-                    onDisqualify={onDisqualify}
-                    isDisqualifyValid={isDisqualifyValid}
-                />
-            </section>
-        );
-
-        const DisqualificationModal = ({ trainee, traineeIndex, onConfirm, onCancel, trainerUsername, isSaving }) => {
-            const [proofLink, setProofLink] = useState('');
-            const [reason, setReason] = useState('');
-            const [confirmationText, setConfirmationText] = useState('');
-            
-            const traineeName = trainee.traineeName || `Trainee #${traineeIndex + 1}`;
-            const requiredConfirmation = `DISQUALIFY ${traineeName}`;
-
-            const handleConfirm = () => {
-                if (confirmationText.toUpperCase() === requiredConfirmation.toUpperCase()) {
-                    onConfirm(traineeIndex, proofLink, reason);
+                    updateTrainee(index, { 
+                        ...trainee, 
+                        status: 'disqualified', 
+                        knowledgeScore: 0,
+                        disqualificationReason: reason || 'No reason provided',
+                        disqualificationProof: proof || 'No link provided'
+                    });
                 }
             };
             
+            const cardBg = useMemo(() => {
+                if (trainee.status === 'disqualified') return 'bg-hrp-red/20 border-hrp-red/50';
+                const status = determineStatus(trainee);
+                if (status === 'PASSED') return 'bg-hrp-green/20 border-hrp-green/50';
+                if (status === 'FAILED') return 'bg-yellow-500/20 border-yellow-500/50';
+                return 'bg-slate-800 border-slate-700';
+            }, [trainee]);
+            
+            const cardTitle = useMemo(() => {
+                if (trainee.status === 'disqualified') return '🚨 DISQUALIFIED';
+                return determineStatus(trainee);
+            }, [trainee]);
+
             return (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-4">
-                    <div className="bg-slate-800 rounded-xl shadow-2xl border border-rose-600 w-full max-w-lg">
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center text-rose-400 border-b border-rose-700 pb-3">
-                                <AlertTriangle className="w-6 h-6 mr-3" />
-                                <h3 className="text-xl font-bold text-white">Confirm Disqualification</h3>
-                            </div>
+                <div className={`p-4 border rounded-lg shadow-md transition-colors ${cardBg}`}>
+                    <div className="flex justify-between items-start mb-3">
+                        <h4 className="text-lg font-bold text-gray-100">{trainee.traineeName || `Trainee ${index + 1}`} - {cardTitle}</h4>
+                        <button
+                            onClick={() => removeTrainee(index)}
+                            className="text-gray-400 hover:text-hrp-red transition-colors"
+                            aria-label="Remove Trainee"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    </div>
 
-                            <p className="text-slate-300">
-                                You are about to **permanently disqualify {traineeName}** from this training session. This action requires mandatory proof.
-                            </p>
-
-                            <div className="space-y-1">
-                                <label className="block text-sm font-medium text-white">
-                                    Evidence Link (Video/Screenshot) <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://i.imgur.com/proof.png or video link"
-                                    value={proofLink}
-                                    onChange={(e) => setProofLink(e.target.value)}
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500"
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InputGroup
+                            label="Trainee Name"
+                            value={trainee.traineeName}
+                            onChange={(v) => handleInputChange('traineeName', v)}
+                            placeholder="Name"
+                            required
+                        />
+                         <InputGroup
+                            label="Roblox Username"
+                            value={trainee.traineeRobloxUsername}
+                            onChange={(v) => handleInputChange('traineeRobloxUsername', v)}
+                            placeholder="Roblox Username"
+                            required
+                        />
+                        <InputGroup
+                            label="Discord ID"
+                            value={trainee.traineeDiscordId}
+                            onChange={(v) => handleInputChange('traineeDiscordId', v)}
+                            placeholder="Discord ID (e.g., 123456789)"
+                            required
+                        />
+                    </div>
+                    
+                    <hr className="my-4 border-slate-700" />
+                    
+                    {trainee.status !== 'disqualified' ? (
+                        <>
+                            <h5 className="text-md font-semibold text-gray-200 mb-3">Assessment</h5>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <InputGroup
+                                    label="Knowledge Score (Max 10)"
+                                    type="number"
+                                    value={trainee.knowledgeScore}
+                                    onChange={(v) => handleInputChange('knowledgeScore', Math.min(10, Math.max(0, parseInt(v) || 0)))}
+                                    min="0"
+                                    max="10"
                                     required
                                 />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="block text-sm font-medium text-white">
-                                    Reason for Disqualification <span className="text-rose-500">*</span>
-                                </label>
-                                <textarea
-                                    placeholder="Specify the rule they broke or why they are being disqualified."
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    rows="3"
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-rose-500 focus:border-rose-500 resize-none"
+                                <InputGroup
+                                    label="Weapon Deaths"
+                                    type="number"
+                                    value={trainee.weaponDeaths}
+                                    onChange={(v) => handleInputChange('weaponDeaths', parseInt(v) || 0)}
+                                    min="0"
                                     required
+                                />
+                                <div className="flex flex-col justify-end space-y-2">
+                                    <CheckboxGroup
+                                        label="Killed Sniper Correctly?"
+                                        checked={trainee.weaponKilledSniper}
+                                        onChange={(v) => handleInputChange('weaponKilledSniper', v)}
+                                    />
+                                </div>
+                            </div>
+                            
+                            <hr className="my-4 border-slate-700" />
+                            
+                            <h5 className="text-md font-semibold text-gray-200 mb-3">Moderation</h5>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <CheckboxGroup
+                                    label="Good English?"
+                                    checked={trainee.modGoodEnglish}
+                                    onChange={(v) => handleInputChange('modGoodEnglish', v)}
+                                />
+                                <CheckboxGroup
+                                    label="Asked for Proof?"
+                                    checked={trainee.modAskedForProof}
+                                    onChange={(v) => handleInputChange('modAskedForProof', v)}
+                                />
+                                <CheckboxGroup
+                                    label="Healed Trainer?"
+                                    checked={trainee.modHealedTrainer}
+                                    onChange={(v) => handleInputChange('modHealedTrainer', v)}
+                                />
+                                <CheckboxGroup
+                                    label="Punished Correctly?"
+                                    checked={trainee.modPunishedCorrectly}
+                                    onChange={(v) => handleInputChange('modPunishedCorrectly', v)}
                                 />
                             </div>
                             
-                            <div className="space-y-1 pt-3 border-t border-slate-700">
-                                <label className="block text-sm font-medium text-rose-300">
-                                    Type the following to confirm: <code className="text-rose-400">{requiredConfirmation}</code>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={confirmationText}
-                                    onChange={(e) => setConfirmationText(e.target.value)}
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-rose-400 placeholder-slate-500 font-mono focus:ring-rose-500 focus:border-rose-500"
-                                />
-                            </div>
-
-                            <div className="flex justify-end space-x-3 pt-4">
+                            <InputGroup
+                                label="Assessment Notes"
+                                value={trainee.knowledgeNotes}
+                                onChange={(v) => handleInputChange('knowledgeNotes', v)}
+                                placeholder="Key points about knowledge"
+                            />
+                            
+                            <div className="mt-4">
                                 <button
-                                    type="button"
-                                    onClick={onCancel}
-                                    className="px-4 py-2 text-sm font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition duration-150"
-                                    disabled={isSaving}
+                                    onClick={handleDisqualify}
+                                    className="w-full px-4 py-2 text-sm font-medium text-white bg-hrp-red/80 hover:bg-hrp-red rounded-md transition duration-150 flex items-center justify-center"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleConfirm}
-                                    disabled={confirmationText.toUpperCase() !== requiredConfirmation.toUpperCase() || !proofLink.trim() || !reason.trim() || isSaving}
-                                    className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-rose-600 hover:bg-rose-700 transition duration-150 disabled:bg-rose-900 disabled:text-rose-500 disabled:cursor-not-allowed"
-                                >
-                                    {isSaving ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Disqualifying...
-                                        </>
-                                    ) : (
-                                        'Disqualify Trainee'
-                                    )}
+                                    <AlertTriangle size={16} className="mr-2" />
+                                    Disqualify Trainee
                                 </button>
                             </div>
+                        </>
+                    ) : (
+                        // Disqualified View
+                        <div className="space-y-3 p-3 bg-hrp-red/30 rounded-lg">
+                            <p className="text-sm font-medium text-gray-200">Reason: {trainee.disqualificationReason}</p>
+                            <p className="text-sm font-medium text-gray-200">Proof: <a href={trainee.disqualificationProof} target="_blank" className="text-blue-300 hover:text-blue-400 break-all">{trainee.disqualificationProof}</a></p>
+                            <button
+                                onClick={handleDisqualify}
+                                className="px-4 py-1 text-xs font-medium text-hrp-red bg-white/10 hover:bg-white/20 rounded-md transition duration-150"
+                            >
+                                Undo Disqualification
+                            </button>
                         </div>
-                    </div>
+                    )}
                 </div>
             );
         };
+
+        // ====================================================================
+        // EVALUATION FORM COMPONENT (MAIN LOGIC)
+        // ====================================================================
 
         const EvaluationForm = ({ db, userId }) => {
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
-            const [coTrainers, setCoTrainers] = useState([]);
-            const [trainees, setTrainees] = useState([initialTraineeState]);
-            const [isSaving, setIsSaving] = useState(false);
+            const [coTrainers, setCoTrainers] = useState([{ username: '' }]);
+            const [trainees, setTrainees] = useState([]);
+            const [copyStatus, setCopyStatus] = useState(null); // null, 'success', 'error', 'loading'
             const [error, setError] = useState(null);
-            const [success, setSuccess] = useState(false);
-            const [traineeToDisqualifyIndex, setTraineeToDisqualifyIndex] = useState(null);
-            const [copyStatus, setCopyStatus] = useState(null);
-            const isDisqualificationModalOpen = traineeToDisqualifyIndex !== null;
 
-            // --- Trainee Management (Max 5) ---
+            // Placeholder for the bot's API endpoint
+            // !!! YOU MUST REPLACE THIS WITH YOUR BOT'S ACTUAL PUBLIC IP/DOMAIN !!!
+            const API_ENDPOINT = "http://YOUR_SERVER_IP_OR_DOMAIN:5000"; 
+            // ------------------------------------------------------------------
+
+            const addCoTrainer = () => {
+                setCoTrainers([...coTrainers, { username: '' }]);
+            };
+
+            const updateCoTrainer = (index, newUsername) => {
+                const newCoTrainers = coTrainers.map((ct, i) =>
+                    i === index ? { ...ct, username: newUsername } : ct
+                );
+                setCoTrainers(newCoTrainers);
+            };
+
+            const removeCoTrainer = (index) => {
+                setCoTrainers(coTrainers.filter((_, i) => i !== index));
+            };
+
             const addTrainee = () => {
-                if (trainees.length < 5) {
-                    setTrainees([...trainees, initialTraineeState]);
-                    setError(null);
-                } else {
-                    setError("Maximum of 5 trainees reached.");
-                }
+                setTrainees([...trainees, {
+                    traineeName: '',
+                    traineeRobloxUsername: '',
+                    traineeDiscordId: '',
+                    knowledgeScore: 0,
+                    knowledgeNotes: '',
+                    weaponDeaths: 0,
+                    weaponKilledSniper: false,
+                    modGoodEnglish: false,
+                    modAskedForProof: false,
+                    modHealedTrainer: false,
+                    modPunishedCorrectly: false,
+                    modNotes: '',
+                    status: 'pending', // 'pending', 'disqualified'
+                    disqualificationReason: '',
+                    disqualificationProof: ''
+                }]);
             };
-            const removeTrainee = (index) => {
-                if (trainees.length > 1) {
-                    setTrainees(trainees.filter((_, i) => i !== index));
-                }
-            };
-            const updateTrainee = (index, field, value) => {
-                const newTrainees = trainees.map((trainee, i) => {
-                    if (i === index) {
-                        return { ...trainee, [field]: value };
-                    }
-                    return trainee;
-                });
+
+            const updateTrainee = (index, newTraineeData) => {
+                const newTrainees = trainees.map((t, i) =>
+                    i === index ? newTraineeData : t
+                );
                 setTrainees(newTrainees);
             };
-
-            // Co-Trainer Management
-            const addCoTrainer = () => {
-                if (coTrainers.length === 0) {
-                    setCoTrainers([{ username: '' }]);
-                }
-            };
-            const updateCoTrainer = (index, value) => {
-                if (index === 0) {
-                    setCoTrainers([{ username: value }]);
-                }
-            };
-            const removeCoTrainer = (index) => {
-                if (index === 0) {
-                    setCoTrainers([]);
-                }
-            };
-
-            // Helper to generate the base evaluation data object
-            const generateEvaluationData = (trainee, status, proofLink = '', reason = '') => ({
-                trainerRobloxUsername: trainerRobloxUsername.trim(),
-                coTrainers: coTrainers.length === 1 && coTrainers[0].username.trim() ? [coTrainers[0].username.trim()] : [],
-                traineeDiscordId: trainee.traineeDiscordId.trim(),
-                traineeRobloxUsername: trainee.traineeRobloxUsername.trim(),
-                traineeName: trainee.traineeName.trim(),
-                assessment: {
-                    knowledgeScore: status === 'DISQUALIFIED' ? 0 : Number(trainee.knowledgeScore),
-                    knowledgeNotes: trainee.knowledgeNotes.trim(),
-                    moderation: {
-                        goodEnglish: trainee.modGoodEnglish,
-                        askedForProof: trainee.modAskedForProof,
-                        healedTrainer: trainee.modHealedTrainer,
-                        punishedCorrectly: trainee.modPunishedCorrectly,
-                        notes: trainee.modNotes.trim(),
-                    },
-                    weaponHandling: {
-                        deaths: trainee.weaponDeaths,
-                        killedSniper: trainee.weaponKilledSniper,
-                    },
-                    disqualification: status === 'DISQUALIFIED' ? { proofLink, reason } : null,
-                },
-                timestamp: mockServerTimestamp(),
-                userId: userId,
-                status: status,
-                totalScore: status === 'DISQUALIFIED' ? 0 : Number(trainee.knowledgeScore),
-                batchId: crypto.randomUUID(),
-            });
-
-            const openIndividualDisqualificationModal = (index) => {
-                if (!trainerRobloxUsername.trim()) {
-                    setError("Please enter the Trainer's Roblox Username first.");
-                    return;
-                }
-                const trainee = trainees[index];
-                if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername || !trainee.traineeName) {
-                    setError("Please fill out the Trainee Name and ID fields before disqualifying.");
-                    return;
-                }
-                setError(null);
-                setTraineeToDisqualifyIndex(index);
-            };
-
-            const handleDisqualify = async (index, proofLink, reason) => {
-                setError(null);
-                setSuccess(false);
-                const trainee = trainees[index];
-                updateTrainee(index, 'status', 'processing');
-                setIsSaving(true);
-                try {
-                    const evaluationData = generateEvaluationData(trainee, 'DISQUALIFIED', proofLink, reason);
-                    await mockAddDoc(evaluationData);
-                    
-                    updateTrainee(index, 'status', 'disqualified');
-                    setSuccess(`Trainee #${index + 1} successfully DISQUALIFIED.`);
-                    setTimeout(() => setSuccess(false), 5000);
-                } catch (err) {
-                    console.error("Error saving disqualification:", err);
-                    setError(`Failed to save disqualification for Trainee #${index + 1}. Check console for details.`);
-                    updateTrainee(index, 'status', 'pending');
-                } finally {
-                    setIsSaving(false);
-                    setTraineeToDisqualifyIndex(null);
-                }
+            
+            const removeTrainee = (index) => {
+                setTrainees(trainees.filter((_, i) => i !== index));
             };
             
-            // --- MODIFIED: Generate Copyable Results Format (Includes role ID mention) ---
             const generateCopyFormat = () => {
-                const trainer = trainerRobloxUsername || 'N/A';
-                const coTrainer = coTrainers.length && coTrainers[0].username ? coTrainers[0].username : 'N/A';
+                // Generates the legacy text format for manual Discord copy/paste fallback
+                const header = `__**Training Session Results: ${trainerRobloxUsername}**__\nCo-Trainer(s): ${coTrainers.map(ct => ct.username).filter(Boolean).join(', ') || 'N/A'}\n\n`;
                 
-                let resultText = `**Training Evaluation Results**\n`;
-                resultText += `**Trainer:** ${trainer}\n`;
-                resultText += `**Co-Trainer:** ${coTrainer}\n\n`;
-                resultText += `--- Trainee Results ---\n`;
-
-                trainees.forEach((t, index) => {
+                const results = trainees.map(t => {
                     const status = determineStatus(t);
-                    const knowledgeScore = t.knowledgeScore || 'N/A';
-                    const discordMention = t.traineeDiscordId ? `<@${t.traineeDiscordId}>` : '@N/A';
-
-                    resultText += `\n**Trainee ${index + 1}: ${t.traineeName || 'N/A'} (${discordMention})**\n`;
-                    resultText += `**Roblox User:** ${t.traineeRobloxUsername || 'N/A'}\n`;
-                    resultText += `**FINAL STATUS:** ${status}\n`;
+                    const discordMention = t.traineeDiscordId ? `<@${t.traineeDiscordId}>` : t.traineeName;
+                    const knowledge = t.status === 'disqualified' ? 'DISQUALIFIED' : `${t.knowledgeScore}/10`;
                     
-                    if (status === 'PASSED' || status === 'FAILED' || (status === 'PENDING' && checkTraineeRequiredFields(t))) {
-                        resultText += `Knowledge Score: ${knowledgeScore}/10\n`;
-                        resultText += `Mod Scene:\n`;
-                        resultText += `- English: ${t.modGoodEnglish === true ? 'Yes' : t.modGoodEnglish === false ? 'No' : 'N/A'}\n`;
-                        resultText += `- Proof: ${t.modAskedForProof === true ? 'Yes' : t.modAskedForProof === false ? 'No' : 'N/A'}\n`;
-                        resultText += `- Healed: ${t.modHealedTrainer === true ? 'Yes' : t.modHealedTrainer === false ? 'No' : 'N/A'}\n`;
-                        resultText += `- Punishment: ${t.modPunishedCorrectly === true ? 'Correct' : t.modPunishedCorrectly === false ? 'Incorrect' : 'N/A'}\n`;
-                        resultText += `Weapon Deaths: ${t.weaponDeaths || 'N/A'}\n`;
-                        resultText += `Killed Sniper: ${t.weaponKilledSniper === true ? 'Yes' : t.weaponKilledSniper === false ? 'No' : 'N/A'}\n`;
-                    } else if (status === 'DISQUALIFIED') {
-                        resultText += `Disqualified at time of entry. Requires trainer to submit proof.\n`;
-                    } else if (status === 'PENDING') {
-                         resultText += `Status: PENDING - Not all required fields were filled.\n`;
+                    let details = `**Status:** ${status}\n`;
+                    
+                    if (t.status === 'disqualified') {
+                        details += `**Reason:** ${t.disqualificationReason}\n**Proof:** <${t.disqualificationProof}>\n`;
+                    } else {
+                        const modChecks = [
+                            t.modGoodEnglish && "Good English",
+                            t.modAskedForProof && "Asked for Proof",
+                            t.modHealedTrainer && "Healed Trainer",
+                            t.modPunishedCorrectly && "Punished Correctly",
+                        ].filter(Boolean).join(', ') || 'None';
+                        
+                        details += `**Knowledge:** ${knowledge}\n` +
+                                   `**Weapon:** ${t.weaponDeaths} deaths, ${t.weaponKilledSniper ? 'Sniper Kill' : 'No Sniper Kill'}\n` +
+                                   `**Moderation:** ${modChecks}\n` +
+                                   `**Notes:** ${t.knowledgeNotes || 'N/A'}`;
                     }
-                });
-                
-                resultText += `\n||<@&${DISCORD_ROLE_ID}>||`;
-                
-                return resultText;
+                    
+                    return `**${discordMention} (${t.traineeRobloxUsername})**\n${details}\n`;
+                }).join('—\n');
+
+                const footer = `\n||<@&1381367977252749443>|| (Dashboard Access Role Mention)`;
+
+                return header + results + footer;
+            };
+
+            const generateSubmissionData = () => {
+                // Creates the structured JSON payload for the bot API
+                return {
+                    trainerRobloxUsername: trainerRobloxUsername.trim(),
+                    coTrainers: coTrainers.map(ct => ct.username.trim()).filter(Boolean),
+                    timestamp: new Date().toISOString(),
+                    trainees: trainees.map(t => {
+                        const status = determineStatus(t);
+                        const isDisqualified = t.status === 'disqualified';
+
+                        return {
+                            traineeDiscordId: t.traineeDiscordId.trim(),
+                            traineeRobloxUsername: t.traineeRobloxUsername.trim(),
+                            traineeName: t.traineeName.trim(),
+                            status: status,
+                            knowledgeScore: isDisqualified ? 0 : Number(t.knowledgeScore),
+                            
+                            assessment: isDisqualified ? null : {
+                                knowledgeNotes: t.knowledgeNotes.trim(),
+                                moderation: {
+                                    goodEnglish: t.modGoodEnglish,
+                                    askedForProof: t.modAskedForProof,
+                                    healedTrainer: t.modHealedTrainer,
+                                    punishedCorrectly: t.modPunishedCorrectly,
+                                    notes: t.modNotes.trim(),
+                                },
+                                weaponHandling: {
+                                    deaths: t.weaponDeaths,
+                                    killedSniper: t.weaponKilledSniper,
+                                },
+                            },
+                            disqualification: isDisqualified ? { 
+                                proofLink: t.disqualificationProof || 'N/A',
+                                reason: t.disqualificationReason || 'N/A' 
+                            } : null
+                        };
+                    }).filter(t => t.traineeDiscordId) // Only submit trainees with IDs
+                };
             };
             
-            // --- NEW: Handle Copy Action ---
-            const handleCopyResults = () => {
-                const formatText = generateCopyFormat();
-                navigator.clipboard.writeText(formatText).then(() => {
-                    setCopyStatus('success');
-                    setTimeout(() => setCopyStatus(null), 3000);
-                }).catch(err => {
-                    console.error('Failed to copy text: ', err);
+            // ====================================================================
+            // NEW API SUBMISSION LOGIC
+            // ====================================================================
+            const handleCopyResults = async () => {
+                setCopyStatus('loading');
+                setError(null);
+                
+                const submissionData = generateSubmissionData();
+                
+                // Fallback: Copy the standard format for manual pasting
+                const fallbackText = generateCopyFormat(); 
+                navigator.clipboard.writeText(fallbackText);
+                
+                // Check for minimum data before submission
+                if (!trainerRobloxUsername || trainees.length === 0 || trainees.some(t => !t.traineeDiscordId || !t.traineeRobloxUsername)) {
                     setCopyStatus('error');
+                    setError('Missing Trainer Username or Trainee Discord/Roblox IDs.');
                     setTimeout(() => setCopyStatus(null), 3000);
-                });
+                    setTimeout(() => setError(null), 5000);
+                    return;
+                }
+
+                // POST to the Flask Endpoint
+                try {
+                    const response = await fetch(`${API_ENDPOINT}/submit-evaluation`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(submissionData),
+                    });
+
+                    if (response.ok) {
+                        setCopyStatus('success');
+                    } else {
+                        console.error('API Post Failed:', response.status);
+                        const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
+                        console.error('Server Error Details:', errorData);
+                        setCopyStatus('error');
+                        setError(`Submission failed (HTTP ${response.status}). Bot error: ${errorData.error || 'Check console.'}`);
+                    }
+                } catch (err) {
+                    console.error('Network Error:', err);
+                    setCopyStatus('error');
+                    setError('Could not connect to the bot server. Check the API_ENDPOINT URL and port 5000.');
+                } finally {
+                    setTimeout(() => setCopyStatus(null), 3000);
+                    setTimeout(() => setError(null), 5000);
+                }
             };
+            // ====================================================================
 
 
-            // Calculate Summary Status for the indicator
-            const totalTrainees = trainees.length;
-            const processedTrainees = trainees.filter(t => t.status !== 'pending' && t.status !== 'processing').length;
-            const passedTrainees = trainees.filter(t => t.status === 'passed').length;
-            const summaryText = `${processedTrainees}/${totalTrainees} Trainees Processed, ${passedTrainees} Passed`;
-            const traineeToDisqualify = isDisqualificationModalOpen ? trainees[traineeToDisqualifyIndex] : null;
-
-            // --- Render ---
             return (
-                <>
-                    <div className="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 w-full">
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                            <List className="w-6 h-6 mr-2 text-sky-400" /> Submit Training Results
-                        </h2>
-                        <p className="text-slate-400 mb-6 border-b border-slate-700 pb-4"> 
-                            Enter trainee data below. Use the **Copy Results** button at the bottom to generate the postable summary.
-                        </p>
+                <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Training Evaluation</h3>
 
-                        {/* Trainer Information Section */}
-                        <section className="space-y-4 mb-8">
-                            <h3 className="text-xl font-bold text-white flex items-center">
-                                <User className="w-5 h-5 mr-2 text-sky-400" /> Trainer Information
-                            </h3>
-                            <div className="space-y-1">
-                                <div className="flex justify-between items-center mb-1">
-                                    <label className="block text-sm font-medium text-slate-200">
-                                        Trainer Roblox Username <span className="text-rose-500">*</span>
-                                    </label>
-                                    {coTrainers.length === 0 && (
-                                        <button 
-                                            type="button" 
-                                            onClick={addCoTrainer} 
-                                            className="text-xs text-sky-400 hover:text-sky-300 font-semibold p-1 rounded-md transition flex items-center"
+                    {/* Trainer & Co-Trainer Section */}
+                    <div className="p-4 bg-slate-800 rounded-lg shadow-inner">
+                        <h4 className="text-lg font-semibold text-gray-200 mb-3">Trainer Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputGroup
+                                label="Your Roblox Username"
+                                value={trainerRobloxUsername}
+                                onChange={setTrainerRobloxUsername}
+                                placeholder="Roblox Username"
+                                required
+                            />
+                        </div>
+                        
+                        <h5 className="text-md font-medium text-gray-300 mt-4 mb-2">Co-Trainers (Optional)</h5>
+                        <div className="space-y-2">
+                            {coTrainers.map((ct, index) => (
+                                <div key={index} className="flex space-x-2 items-center">
+                                    <div className="flex-grow">
+                                        <RoleInput
+                                            value={ct.username}
+                                            onChange={(v) => updateCoTrainer(index, v)}
+                                            placeholder={`Co-Trainer #${index + 1} Roblox Username`}
+                                        />
+                                    </div>
+                                    {coTrainers.length > 1 && (
+                                        <button
+                                            onClick={() => removeCoTrainer(index)}
+                                            className="p-2 text-gray-400 hover:text-hrp-red rounded-full hover:bg-slate-700 transition-colors"
                                         >
-                                            <Plus className="w-3 h-3 mr-1" /> Add Co-Trainer
+                                            <X size={16} />
                                         </button>
                                     )}
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder="Your Roblox username"
-                                    value={trainerRobloxUsername}
-                                    onChange={(e) => setTrainerRobloxUsername(e.target.value)}
-                                    className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                                    required
-                                />
-                            </div>
+                            ))}
+                            <button
+                                onClick={addCoTrainer}
+                                className="px-3 py-1 text-sm text-hrp-green border border-hrp-green rounded-md hover:bg-hrp-green/10 transition-colors flex items-center"
+                            >
+                                <Plus size={16} className="mr-1" /> Add Co-Trainer
+                            </button>
+                        </div>
+                    </div>
 
-                            {/* Co-Trainer Input */}
-                            {coTrainers.length === 1 && (
-                                <div className="space-y-3 pt-2">
-                                    <label className="block text-sm font-medium text-slate-200">Co-Trainer Roblox Username (Optional)</label>
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Co-Trainer's Roblox username"
-                                            value={coTrainers[0].username}
-                                            onChange={(e) => updateCoTrainer(0, e.target.value)}
-                                            className="flex-grow p-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                                        />
-                                        <button 
-                                            type="button" 
-                                            onClick={() => removeCoTrainer(0)} 
-                                            className="p-3 text-slate-400 hover:text-rose-400 bg-slate-700 rounded-lg border border-slate-600 transition"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </section>
+                    {/* Trainee Section */}
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xl font-bold text-gray-100">Trainees ({trainees.length})</h4>
+                            <button
+                                onClick={addTrainee}
+                                className="px-4 py-2 text-sm text-white bg-hrp-green/80 hover:bg-hrp-green rounded-md transition-colors flex items-center"
+                            >
+                                <Plus size={18} className="mr-2" /> Add Trainee
+                            </button>
+                        </div>
                         
-                        {/* Trainee Assessment Sections */}
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-center border-t border-slate-700 pt-6">
-                            <User className="w-5 h-5 mr-2 text-sky-400" /> Trainees ({summaryText})
-                        </h3>
-
-                        <div className="space-y-8">
+                        {trainees.length === 0 && (
+                            <p className="text-gray-400 p-4 border border-dashed border-slate-700 rounded-lg text-center">Click 'Add Trainee' to begin evaluation.</p>
+                        )}
+                        
+                        <div className="space-y-6 custom-scroll max-h-[60vh] p-1">
                             {trainees.map((trainee, index) => (
-                                <TraineeAssessmentSection
+                                <TraineeForm
                                     key={index}
                                     trainee={trainee}
                                     index={index}
-                                    onUpdate={updateTrainee}
-                                    onRemove={() => removeTrainee(index)}
-                                    onDisqualify={() => openIndividualDisqualificationModal(index)}
-                                    isRemovable={trainees.length > 1}
-                                    isDisqualifyValid={trainee.traineeDiscordId.trim() && trainee.traineeRobloxUsername.trim() && trainee.traineeName.trim()}
+                                    updateTrainee={updateTrainee}
+                                    removeTrainee={removeTrainee}
                                 />
                             ))}
                         </div>
-
-                        {/* GLOBAL ACTION BUTTONS (NEW LOCATION) */}
-                        <div className="flex flex-col space-y-4 justify-center mt-8 pt-4 border-t border-slate-700">
-                            <button
-                                type="button"
-                                onClick={addTrainee}
-                                disabled={trainees.length >= 5 || isSaving}
-                                className="flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-indigo-700 hover:bg-indigo-600 transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg"
-                            >
-                                <Plus className="w-5 h-5 mr-2" /> Add Trainee (Max 5)
-                            </button>
-                            
-                            {/* NEW: Copy Results Button */}
-                            <button
-                                onClick={handleCopyResults}
-                                disabled={isSaving || !trainerRobloxUsername.trim()}
-                                className={`flex items-center justify-center w-full px-6 py-3 rounded-lg font-semibold text-white transition duration-200 
-                                    ${copyStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-sky-600 hover:bg-sky-700'}
-                                    ${copyStatus === 'error' ? 'bg-red-600 hover:bg-red-700' : ''}
-                                    disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg
-                                `}
-                            >
-                                <Copy className="w-5 h-5 mr-2" />
-                                {copyStatus === 'success' ? 'Results Copied!' : copyStatus === 'error' ? 'Copy Failed!' : 'Copy Results for Discord'}
-                            </button>
-                            {copyStatus === 'success' && (
-                                <p className="text-sm text-green-400 text-center">Paste the results directly into Discord.</p>
-                            )}
-                        </div>
-                        
-                        {/* Status/Error Messages */}
-                        {error && (
-                            <div className="mt-6 p-4 bg-rose-800/50 border border-rose-600 text-rose-300 rounded-lg flex items-center">
-                                <AlertTriangle className="w-5 h-5 mr-3" />
-                                <p className="text-sm font-medium">{error}</p>
-                            </div>
-                        )}
-                        {success && (
-                            <div className="mt-6 p-4 bg-emerald-800/50 border border-emerald-600 text-emerald-300 rounded-lg flex items-center">
-                                <Save className="w-5 h-5 mr-3" />
-                                <p className="text-sm font-medium">{success}</p>
-                            </div>
-                        )}
                     </div>
 
-                    {isDisqualificationModalOpen && traineeToDisqualify && (
-                        <DisqualificationModal
-                            trainee={traineeToDisqualify}
-                            traineeIndex={traineeToDisqualifyIndex}
-                            onConfirm={handleDisqualify}
-                            onCancel={() => setTraineeToDisqualifyIndex(null)}
-                            trainerUsername={trainerRobloxUsername}
-                            isSaving={isSaving}
-                        />
-                    )}
-                </>
+                    {/* Submission/Copy Button */}
+                    <div className="pt-4 border-t border-slate-700">
+                        {error && (
+                            <div className="p-3 mb-4 text-sm text-hrp-red bg-hrp-red/20 rounded-lg flex items-center">
+                                <AlertTriangle size={18} className="mr-2" />
+                                {error}
+                            </div>
+                        )}
+                        <button
+                            onClick={handleCopyResults}
+                            disabled={copyStatus === 'loading'}
+                            className={`w-full px-4 py-3 text-lg font-bold text-white rounded-lg transition-colors duration-200 flex items-center justify-center ${
+                                copyStatus === 'success' ? 'bg-hrp-green/90' :
+                                copyStatus === 'error' ? 'bg-hrp-red/90' :
+                                copyStatus === 'loading' ? 'bg-slate-700 cursor-not-allowed' :
+                                'bg-blue-600 hover:bg-blue-700'
+                            }`}
+                        >
+                            {copyStatus === 'loading' ? (
+                                <><Loader2 size={20} className="mr-3 animate-spin" /> Submitting to Bot API...</>
+                            ) : copyStatus === 'success' ? (
+                                <><ClipboardCheck size={20} className="mr-3" /> Submitted to Bot API (and Copied for Fallback)</>
+                            ) : copyStatus === 'error' ? (
+                                <><AlertTriangle size={20} className="mr-3" /> Submission Failed (Copied for Manual Paste)</>
+                            ) : (
+                                <><List size={20} className="mr-3" /> Submit Evaluation & Post to Discord</>
+                            )}
+                        </button>
+                    </div>
+                </div>
             );
         };
         
+        // ====================================================================
+        // VOICE VERIFICATION COMPONENT
+        // ====================================================================
 
-        // --- AnnounceTrainingTab Component ---
-        const AnnounceTrainingTab = ({ db, userId }) => {
-            const { useState } = React;
-            const [trainerName, setTrainerName] = useState('');
-            const [date, setDate] = useState('');
-            const [time, setTime] = useState('');
-            const [requirements, setRequirements] = useState('');
-            const [copyStatus, setCopyStatus] = useState(null); // 'success' or 'error'
-
-            const generateFormat = () => {
-                const discordMention = DISCORD_ROLE_ID ? `||<@&${DISCORD_ROLE_ID}>||` : '||@role-to-ping||';
-                
-                return (
-                    `**Trainee Evaluation Announcement**\n\n` +
-                    `**Trainer's Name:** ${trainerName || '__________________'}\n` +
-                    `**Date:** ${date || 'DD/MM/YYYY'}\n` +
-                    `**Time:** ${time || 'HH:MM (Timezone)'}\n` +
-                    `**Requirements:**\n${requirements || 'Any software, links, or documents needed for the session.'}\n\n` +
-                    `${discordMention}`
-                );
-            };
-
-            const handleCopy = () => {
-                const formatText = generateFormat();
-                navigator.clipboard.writeText(formatText).then(() => {
-                    setCopyStatus('success');
-                    setTimeout(() => setCopyStatus(null), 3000);
-                }).catch(err => {
-                    console.error('Failed to copy text: ', err);
-                    setCopyStatus('error');
-                    setTimeout(() => setCopyStatus(null), 3000);
-                });
-            };
-
-            return (
-                <div className="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 w-full">
-                    <h2 className="text-2xl font-semibold mb-6 text-white">📅 Training Session Announcement Format</h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {/* Trainer's Name */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-400 mb-1 flex items-center">
-                                <User className="w-4 h-4 mr-2 text-blue-400" />
-                                Trainer's Name
-                            </label>
-                            <input
-                                type="text"
-                                value={trainerName}
-                                onChange={(e) => setTrainerName(e.target.value)}
-                                className="p-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
-                                placeholder="e.g., Jane Doe"
-                            />
-                        </div>
-
-                        {/* Date */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-400 mb-1 flex items-center">
-                                <Calendar className="w-4 h-4 mr-2 text-blue-400" />
-                                Date
-                            </label>
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="w-full p-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {/* Time */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-400 mb-1 flex items-center">
-                                <Clock className="w-4 h-4 mr-2 text-blue-400" />
-                                Time
-                            </label>
-                            <input
-                                type="time"
-                                value={time}
-                                onChange={(e) => setTime(e.target.value)}
-                                className="w-full p-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
-                            />
-                        </div>
-                        
-                        {/* Requirements */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-400 mb-1 flex items-center">
-                                <AlertCircle className="w-4 h-4 mr-2 text-blue-400" />
-                                Any other Requirements
-                            </label>
-                            <textarea
-                                rows="1"
-                                value={requirements}
-                                onChange={(e) => setRequirements(e.target.value)}
-                                className="w-full p-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-blue-500 transition duration-150 resize-none"
-                                placeholder="e.g., Any software, links, or documents needed for the session."
-                            ></textarea>
-                        </div>
-                    </div>
-
-
-                    <h3 className="text-xl font-semibold mt-8 mb-4 text-white border-t border-slate-700 pt-6">Preview & Copy for Discord</h3>
-                    
-                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 whitespace-pre-wrap font-mono text-gray-300 text-sm mb-6">
-                        {generateFormat()}
-                    </div>
-
-                    <button
-                        onClick={handleCopy}
-                        className={`flex items-center justify-center w-full px-6 py-3 rounded-lg font-semibold text-white transition duration-200 
-                            ${copyStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}
-                            ${copyStatus === 'error' ? 'bg-red-600 hover:bg-red-700' : ''}
-                        `}
-                    >
-                        <Copy className="w-5 h-5 mr-2" />
-                        {copyStatus === 'success' ? 'Copied to Clipboard!' : copyStatus === 'error' ? 'Copy Failed!' : 'Copy Format for Discord'}
-                    </button>
-                    
-                    {copyStatus === 'success' && (
-                        <p className="text-sm text-green-400 mt-2">Paste the announcement directly into Discord.</p>
-                    )}
-
-                </div>
-            );
-        };
-
-
-        // --- VoiceVerificationTab Component (Heavily Modified) ---
         const VoiceVerificationTab = ({ db, userId }) => {
-            const { useState } = React;
-            const [trainees, setTrainees] = useState([initialVoiceTraineeState]);
+            const [trainees, setTrainees] = useState([{ traineeName: '', traineeRobloxUsername: '', traineeDiscordId: '', ageRange: '' }]);
+            const [copyStatus, setCopyStatus] = useState(null); // null, 'success', 'error', 'loading'
             const [error, setError] = useState(null);
-            const [copyStatus, setCopyStatus] = useState(null); 
-            const currentDate = new Date().toLocaleDateString('en-GB');
+
+            // Placeholder for the bot's API endpoint
+            // !!! YOU MUST REPLACE THIS WITH YOUR BOT'S ACTUAL PUBLIC IP/DOMAIN !!!
+            const API_ENDPOINT = "http://YOUR_SERVER_IP_OR_DOMAIN:5000"; 
+            // ------------------------------------------------------------------
 
             const addTrainee = () => {
-                if (trainees.length < 5) {
-                    setTrainees([...trainees, initialVoiceTraineeState]);
-                    setError(null);
-                } else {
-                    setError("Maximum of 5 voice trainees reached.");
-                }
+                setTrainees([...trainees, { traineeName: '', traineeRobloxUsername: '', traineeDiscordId: '', ageRange: '' }]);
             };
-            const removeTrainee = (index) => {
-                if (trainees.length > 1) {
-                    setTrainees(trainees.filter((_, i) => i !== index));
-                }
-            };
+
             const updateTrainee = (index, field, value) => {
-                const newTrainees = trainees.map((trainee, i) => {
-                    if (i === index) {
-                        return { ...trainee, [field]: value };
-                    }
-                    return trainee;
-                });
+                const newTrainees = trainees.map((t, i) =>
+                    i === index ? { ...t, [field]: value } : t
+                );
                 setTrainees(newTrainees);
             };
 
-            // --- NEW: Generate Copyable Results Format for Voice Verification ---
+            const removeTrainee = (index) => {
+                setTrainees(trainees.filter((_, i) => i !== index));
+            };
+
             const generateCopyFormat = () => {
-                let resultText = `**Voice Verification Results**\n`;
-                resultText += `**Date:** ${currentDate}\n\n`;
-                resultText += `--- Trainee Results ---\n`;
+                // Generates the legacy text format for manual Discord copy/paste fallback
+                const header = `__**Voice Verification Results**__\nDate: ${new Date().toLocaleDateString('en-GB')}\n\n`;
+                
+                const results = trainees.map(t => {
+                    const discordMention = t.traineeDiscordId ? `<@${t.traineeDiscordId}>` : t.traineeName;
+                    
+                    return `**${discordMention} (${t.traineeRobloxUsername})**\n` +
+                           `**Status:** ✅ Verified\n` +
+                           `**Age Range:** ${t.ageRange || 'N/A'}\n`;
+                }).join('—\n');
 
-                trainees.forEach((t, index) => {
-                    const discordMention = t.traineeDiscordId ? `<@${t.traineeDiscordId}>` : '@N/A';
-                    const isReady = checkVoiceTraineeRequiredFields(t);
-                    
-                    resultText += `\n**Trainee ${index + 1}:** ${discordMention}\n`;
-                    resultText += `**Roblox User:** ${t.traineeRobloxUsername || 'N/A'}\n`;
-                    resultText += `**Age Range:** ${t.ageRange || 'N/A'}\n`;
-                    
-                    if (!isReady) {
-                        resultText += `*Status: PENDING - Missing required fields.*\n`;
-                    }
-                });
-                
-                resultText += `\n||<@&${DISCORD_ROLE_ID}>||`;
-                
-                return resultText;
+                const footer = `\n||<@&1381367977252749443>|| (Dashboard Access Role Mention)`;
+
+                return header + results + footer;
             };
 
-            const handleCopyResults = () => {
-                const formatText = generateCopyFormat();
-                navigator.clipboard.writeText(formatText).then(() => {
-                    setCopyStatus('success');
-                    setTimeout(() => setCopyStatus(null), 3000);
-                }).catch(err => {
-                    console.error('Failed to copy text: ', err);
+            const generateSubmissionData = () => {
+                // Creates the structured JSON payload for the bot API
+                return {
+                    date: new Date().toLocaleDateString('en-GB'),
+                    trainees: trainees.map(t => ({
+                        traineeDiscordId: t.traineeDiscordId.trim(),
+                        traineeRobloxUsername: t.traineeRobloxUsername.trim(),
+                        ageRange: t.ageRange,
+                    })).filter(t => t.traineeDiscordId)
+                };
+            };
+
+            // ====================================================================
+            // NEW API SUBMISSION LOGIC
+            // ====================================================================
+            const handleCopyResults = async () => {
+                setCopyStatus('loading');
+                setError(null);
+
+                const submissionData = generateSubmissionData();
+                
+                // Fallback: Copy the standard format for manual pasting
+                const fallbackText = generateCopyFormat(); 
+                navigator.clipboard.writeText(fallbackText);
+
+                // Check for minimum data before submission
+                if (trainees.length === 0 || trainees.some(t => !t.traineeDiscordId || !t.traineeRobloxUsername || !t.ageRange)) {
                     setCopyStatus('error');
+                    setError('All Trainees must have a Discord ID, Roblox Username, and Age Range selected.');
                     setTimeout(() => setCopyStatus(null), 3000);
-                });
+                    setTimeout(() => setError(null), 5000);
+                    return;
+                }
+
+                // POST to the Flask Endpoint
+                try {
+                    const response = await fetch(`${API_ENDPOINT}/submit-voice-verification`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(submissionData),
+                    });
+
+                    if (response.ok) {
+                        setCopyStatus('success');
+                    } else {
+                        console.error('API Post Failed:', response.status);
+                        const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
+                        console.error('Server Error Details:', errorData);
+                        setCopyStatus('error');
+                        setError(`Submission failed (HTTP ${response.status}). Bot error: ${errorData.error || 'Check console.'}`);
+                    }
+                } catch (err) {
+                    console.error('Network Error:', err);
+                    setCopyStatus('error');
+                    setError('Could not connect to the bot server. Check the API_ENDPOINT URL and port 5000.');
+                } finally {
+                    setTimeout(() => setCopyStatus(null), 3000);
+                    setTimeout(() => setError(null), 5000);
+                }
             };
+            // ====================================================================
 
             return (
-                <div className="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 w-full">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                        <Mic className="w-6 h-6 mr-2 text-sky-400" /> Voice Verification Entry
-                    </h2>
-                    <p className="text-slate-400 mb-6 border-b border-slate-700 pb-4"> 
-                        Enter trainee voice verification data. Use the Copy button to generate the postable summary. 
-                    </p>
+                <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Voice Verification</h3>
 
-                    <div className="space-y-8">
-                        {trainees.map((trainee, index) => (
-                            <section 
-                                key={index}
-                                className="space-y-4 p-5 bg-slate-700 rounded-xl border border-slate-600 relative"
+                    {/* Trainee Section */}
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xl font-bold text-gray-100">Verified Trainees ({trainees.length})</h4>
+                            <button
+                                onClick={addTrainee}
+                                className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex items-center"
                             >
-                                <h3 className="text-xl font-bold text-white mb-4 flex justify-between items-center">
-                                    Voice Trainee #{index + 1}
-                                    {trainees.length > 1 && (
+                                <Plus size={18} className="mr-2" /> Add Verified Trainee
+                            </button>
+                        </div>
+                        
+                        {trainees.length === 0 && (
+                            <p className="text-gray-400 p-4 border border-dashed border-slate-700 rounded-lg text-center">Add verified trainees to record the results.</p>
+                        )}
+                        
+                        <div className="space-y-6 custom-scroll max-h-[60vh] p-1">
+                            {trainees.map((trainee, index) => (
+                                <div key={index} className="p-4 bg-slate-800 border border-slate-700 rounded-lg shadow-md">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h4 className="text-lg font-bold text-gray-100">Trainee #{index + 1}</h4>
                                         <button
-                                            type="button"
                                             onClick={() => removeTrainee(index)}
-                                            className="text-rose-400 hover:text-rose-300 p-1 rounded-full hover:bg-slate-600 transition"
+                                            className="text-gray-400 hover:text-hrp-red transition-colors"
+                                            aria-label="Remove Trainee"
                                         >
-                                            <Trash2 className="w-5 h-5" />
+                                            <Trash2 size={20} />
                                         </button>
-                                    )}
-                                </h3>
-
-                                {/* Trainee Information (Discord ID, Roblox Username, Age Range) */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-slate-600">
-                                    <div className="space-y-1">
-                                        <label className="block text-sm font-medium text-slate-200">Discord ID (Numbers Only) <span className="text-rose-500">*</span></label>
-                                        <input
-                                            type="number"
-                                            placeholder="123456789012345678"
-                                            value={trainee.traineeDiscordId}
-                                            onChange={(e) => updateTrainee(index, 'traineeDiscordId', e.target.value)}
-                                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
-                                            required
-                                        />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="block text-sm font-medium text-slate-200">Roblox Username <span className="text-rose-500">*</span></label>
-                                        <input
-                                            type="text"
-                                            placeholder="Trainee's Roblox username"
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <InputGroup
+                                            label="Roblox Username"
                                             value={trainee.traineeRobloxUsername}
-                                            onChange={(e) => updateTrainee(index, 'traineeRobloxUsername', e.target.value)}
-                                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
+                                            onChange={(v) => updateTrainee(index, 'traineeRobloxUsername', v)}
+                                            placeholder="Roblox Username"
                                             required
                                         />
-                                    </div>
-                                    {/* NEW: Age Range Dropdown */}
-                                    <div className="space-y-1">
-                                        <label className="block text-sm font-medium text-slate-200">Select Age Range <span className="text-rose-500">*</span></label>
-                                        <select
-                                            value={trainee.ageRange}
-                                            onChange={(e) => updateTrainee(index, 'ageRange', e.target.value)}
-                                            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:ring-sky-500 focus:border-sky-500 appearance-none"
+                                        <InputGroup
+                                            label="Discord ID"
+                                            value={trainee.traineeDiscordId}
+                                            onChange={(v) => updateTrainee(index, 'traineeDiscordId', v)}
+                                            placeholder="Discord ID"
                                             required
-                                        >
-                                            {AgeRangeOptions.map(option => (
-                                                <option key={option.value} value={option.value}>{option.label}</option>
-                                            ))}
-                                        </select>
+                                        />
+                                        <div className="flex flex-col space-y-1">
+                                            <label className="text-sm font-medium text-gray-300">Age Range<span className="text-hrp-red">*</span></label>
+                                            <select
+                                                value={trainee.ageRange}
+                                                onChange={(e) => updateTrainee(index, 'ageRange', e.target.value)}
+                                                required
+                                                className="w-full px-3 py-2 text-sm text-white bg-slate-800 border border-slate-700 rounded-md focus:ring-hrp-green focus:border-hrp-green transition duration-150"
+                                            >
+                                                <option value="" disabled>Select Age</option>
+                                                <option value="Under 18">Under 18</option>
+                                                <option value="18+">18+</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                {/* Verification Results Section REMOVED - actions moved to global copy button */}
-                            </section>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col space-y-4 justify-center mt-8 pt-4 border-t border-slate-700">
-                        <button
-                            type="button"
-                            onClick={addTrainee}
-                            disabled={trainees.length >= 5}
-                            className="flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-indigo-700 hover:bg-indigo-600 transition duration-200 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg"
-                        >
-                            <Plus className="w-5 h-5 mr-2" /> Add Voice Trainee (Max 5)
-                        </button>
-                        
-                        {/* NEW: Copy Results Button for Voice Verification */}
+                    {/* Submission/Copy Button */}
+                    <div className="pt-4 border-t border-slate-700">
+                        {error && (
+                            <div className="p-3 mb-4 text-sm text-hrp-red bg-hrp-red/20 rounded-lg flex items-center">
+                                <AlertTriangle size={18} className="mr-2" />
+                                {error}
+                            </div>
+                        )}
                         <button
                             onClick={handleCopyResults}
-                            className={`flex items-center justify-center w-full px-6 py-3 rounded-lg font-semibold text-white transition duration-200 
-                                ${copyStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-sky-600 hover:bg-sky-700'}
-                                ${copyStatus === 'error' ? 'bg-red-600 hover:bg-red-700' : ''}
-                                disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed shadow-lg
-                            `}
+                            disabled={copyStatus === 'loading'}
+                            className={`w-full px-4 py-3 text-lg font-bold text-white rounded-lg transition-colors duration-200 flex items-center justify-center ${
+                                copyStatus === 'success' ? 'bg-hrp-green/90' :
+                                copyStatus === 'error' ? 'bg-hrp-red/90' :
+                                copyStatus === 'loading' ? 'bg-slate-700 cursor-not-allowed' :
+                                'bg-blue-600 hover:bg-blue-700'
+                            }`}
                         >
-                            <Copy className="w-5 h-5 mr-2" />
-                            {copyStatus === 'success' ? 'Results Copied!' : copyStatus === 'error' ? 'Copy Failed!' : 'Copy Results for Discord'}
+                            {copyStatus === 'loading' ? (
+                                <><Loader2 size={20} className="mr-3 animate-spin" /> Submitting to Bot API...</>
+                            ) : copyStatus === 'success' ? (
+                                <><ClipboardCheck size={20} className="mr-3" /> Submitted to Bot API (and Copied for Fallback)</>
+                            ) : copyStatus === 'error' ? (
+                                <><AlertTriangle size={20} className="mr-3" /> Submission Failed (Copied for Manual Paste)</>
+                            ) : (
+                                <><Mic size={20} className="mr-3" /> Submit Verification & Post to Discord</>
+                            )}
                         </button>
-                        {copyStatus === 'success' && (
-                            <p className="text-sm text-green-400 text-center">Paste the results directly into Discord.</p>
-                        )}
                     </div>
-
-
-                    {/* Status/Error Messages */}
-                    {error && (
-                        <div className="mt-6 p-4 bg-rose-800/50 border border-rose-600 text-rose-300 rounded-lg flex items-center">
-                            <AlertTriangle className="w-5 h-5 mr-3" />
-                            <p className="text-sm font-medium">{error}</p>
-                        </div>
-                    )}
                 </div>
             );
         };
+        
+        // ====================================================================
+        // ANNOUNCEMENT TAB (Placeholder)
+        // ====================================================================
+        
+        // This is left as a simple placeholder as no specific functionality was requested, 
+        // but it is included for the structure.
+        const AnnounceTrainingTab = ({ db, userId }) => {
+             const [announcementText, setAnnouncementText] = useState('');
+             
+             const handleAnnounce = () => {
+                 alert('Announce functionality would be implemented here, potentially posting to the bot\'s API too.');
+                 console.log("Announcement Text:", announcementText);
+             };
+             
+             return (
+                <div className="space-y-6 p-4 bg-slate-800 rounded-lg">
+                    <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Training Announcement</h3>
+                    <InputGroup
+                        label="Announcement Details"
+                        value={announcementText}
+                        onChange={setAnnouncementText}
+                        placeholder="e.g., Training starting in 5 minutes! Join VC 1."
+                    />
+                    <button
+                        onClick={handleAnnounce}
+                        className="w-full px-4 py-3 text-lg font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <Volume2 size={20} className="mr-3" /> Announce
+                    </button>
+                </div>
+             );
+        };
 
 
-        // --- Main App Component ---
+        // ====================================================================
+        // APP STRUCTURE
+        // ====================================================================
+        
+        const TabButton = ({ icon: Icon, label, isActive, onClick }) => (
+            <button
+                onClick={onClick}
+                className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 ${
+                    isActive
+                        ? 'bg-slate-700 text-hrp-green border-b-2 border-hrp-green'
+                        : 'bg-slate-800 text-gray-400 hover:bg-slate-700/50 hover:text-gray-300 border-b-2 border-transparent'
+                }`}
+            >
+                <Icon size={18} />
+                <span>{label}</span>
+            </button>
+        );
+
         const App = () => {
-            const [activeTab, setActiveTab] = useState('results'); // Default tab
-            const [userId] = useState(crypto.randomUUID()); // Mocked user ID
-            const db = {}; // Mocked database object
+            const [activeTab, setActiveTab] = useState('results');
+            
+            // Dummy props for the sake of the demo, replace with real logic if needed
+            const db = {}; 
+            const userId = 'user123';
 
             return (
-                <div className="min-h-screen p-4 md:p-10 flex justify-center items-start">
-                    <div className="w-full max-w-4xl">
-                        {/* Tab Navigation */}
-                        <div className="flex space-x-2 p-2 bg-slate-800 rounded-xl mb-6 shadow-xl border border-slate-700">
+                <div className="min-h-screen p-4 sm:p-8 flex justify-center items-start">
+                    <div className="w-full max-w-4xl bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700">
+                        <header className="mb-6 pb-4 border-b border-slate-700">
+                            <h1 className="text-3xl font-extrabold text-white">HR Trainee Console</h1>
+                            <p className="text-gray-400">Automated Training & Verification System</p>
+                        </header>
+
+                        <div className="flex space-x-2 mb-6 border-b border-slate-700/50">
                             <TabButton
-                                icon={MessageSquare}
+                                icon={Volume2}
                                 label="Announcement"
                                 isActive={activeTab === 'announcement'}
                                 onClick={() => setActiveTab('announcement')}
