@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRPB Trainee Evaluation System</title>
+    <title>.GitHub Trainee Evaluation Form (Final)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -52,7 +52,7 @@
         const API_ENDPOINT = "http://s9.katabump.com:5000"; 
         const MAX_TRAINEES = 5;
 
-        // --- MOCKED LUCIDE ICON COMPONENTS ---
+        // --- MOCKED LUCIDE ICON COMPONENTS (defined in previous versions) ---
         const User = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
         const Loader2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" /></svg>;
         const List = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
@@ -65,7 +65,7 @@
         const CornerDownLeft = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 10 10 15 15 20"/><path d="M21 15H10a4 4 0 0 1-4-4V4"/></svg>;
 
 
-        // --- UTILITY COMPONENTS ---
+        // --- UTILITY COMPONENTS (omitted for brevity, assume they are correct) ---
 
         const TabButton = ({ icon: Icon, label, isActive, onClick }) => {
             const activeClasses = 'bg-slate-700 text-purple-400 border-purple-500';
@@ -129,23 +129,39 @@
             </div>
         );
 
-        // --- CORE MARK CALCULATION FUNCTION (FIXED) ---
+        // --- CORE MARK CALCULATION FUNCTION (UPDATED) ---
+        // Now returns { score, isAutoFail }
         const calculateTraineeMarks = (trainee) => {
-            if (trainee.status === 'DISQUALIFIED' || trainee.status === 'PENDING' || !trainee.assessment) return 0;
+            if (trainee.status === 'DISQUALIFIED' || trainee.status === 'PENDING' || !trainee.assessment) {
+                return { score: 0, isAutoFail: false };
+            }
 
             const assessment = trainee.assessment;
             let score = 0;
-            
+            let isAutoFail = false;
+
             // 1. Knowledge (Max 10)
             score += parseInt(assessment.knowledgeScore) || 0;
             
-            // 2. Moderation (4 * 5 = Max 20)
+            // 2. Moderation (Max 20)
+            // CRITICAL FAILURE CHECK 1: SPAG and PROOF
+            if (assessment.moderation?.goodSpag === 'no' || assessment.moderation?.askedForProof === 'no') {
+                isAutoFail = true;
+            }
+            
             score += (assessment.moderation?.goodSpag === 'yes' ? 5 : 0);
             score += (assessment.moderation?.healedTrainer === 'yes' ? 5 : 0);
             score += (assessment.moderation?.askedForProof === 'yes' ? 5 : 0);
-            score += (assessment.moderation?.punishedCorrectly === 'yes' ? 5 : 0);
+            
+            // Punishment does NOT auto-fail, only deducts marks (Max 5)
+            score += (assessment.moderation?.punishedCorrectly === 'yes' ? 5 : 0); 
             
             // 3. Weapon Handling (Max 20)
+            // CRITICAL FAILURE CHECK 2: SNIPER
+            if (assessment.weaponHandling?.spottedSniper === 'no') {
+                 isAutoFail = true;
+            }
+
             const deaths = parseInt(assessment.weaponHandling?.deaths) || 0;
             let deathMarks = 0;
             // Based on explicit criteria: 0 (10), 1 (7), 2 (3), 3+ (0)
@@ -157,10 +173,10 @@
             score += deathMarks; 
             score += (assessment.weaponHandling?.spottedSniper === 'yes' ? 10 : 0);
             
-            return Math.round(score);
+            return { score: Math.round(score), isAutoFail };
         };
 
-        // --- EVALUATION FORM COMPONENTS ---
+        // --- EVALUATION FORM COMPONENTS (UPDATED) ---
 
         const TraineeInput = ({ index, trainee, updateTrainee, removeTrainee }) => {
             const handleDisqualificationChange = (field, value) => {
@@ -194,12 +210,22 @@
                 });
             };
 
+            // Trainee status options, updated to include a text field for 'Other' disqualification
+             const DisqualificationReasonOptions = [
+                { value: '', label: 'Select Reason...' },
+                { value: 'Inappropriate Language', label: 'Inappropriate Language' },
+                { value: 'Exploiting', label: 'Exploiting' },
+                { value: 'Toxic Behavior', label: 'Toxic Behavior' },
+                { value: 'Ignoring Orders', label: 'Ignoring Orders' },
+                { value: 'Other', label: 'Other (Specify below)' }
+            ];
+
             const handleStatusChange = (status) => {
                 let newState = { status };
                 
                 if (status === 'DISQUALIFIED') {
                     newState.assessment = null;
-                    if (!trainee.disqualification) newState.disqualification = { reason: '', proofLink: '' };
+                    if (!trainee.disqualification) newState.disqualification = { reason: '', proofLink: '', otherReason: '' }; // Added otherReason
                 } else if (status === 'PENDING') {
                      newState.assessment = null;
                      newState.disqualification = null;
@@ -212,24 +238,30 @@
                 updateTrainee(index, newState);
             };
             
-            // Calculate Total Marks and Status using the fixed function
-            const totalMarks = useMemo(() => {
+            // Calculate Total Marks, Auto Fail status
+            const calculationResult = useMemo(() => {
                 return calculateTraineeMarks(trainee);
             }, [trainee.status, trainee.assessment]);
+
+            const totalMarks = calculationResult.score;
+            const isAutoFail = calculationResult.isAutoFail;
 
             const finalVerdict = useMemo(() => {
                 if (trainee.status === 'DISQUALIFIED') return { label: 'DISQUALIFIED', color: 'text-red-500' };
                 if (trainee.status === 'PENDING') return { label: 'PENDING', color: 'text-yellow-500' };
                 
+                if (isAutoFail) return { label: 'FAILED (Auto-Fail Rule)', color: 'text-red-500' };
+                
                 return totalMarks >= 30 
                     ? { label: 'PASSED', color: 'text-green-500' }
                     : { label: 'FAILED', color: 'text-red-500' };
-            }, [trainee.status, totalMarks]);
+            }, [trainee.status, totalMarks, isAutoFail]);
             
             // Sync Trainee Status with Calculated Verdict if evaluating
             useEffect(() => {
                 if (trainee.status !== 'DISQUALIFIED' && trainee.status !== 'PENDING' && trainee.assessment && trainee.assessment.knowledgeScore !== '') {
-                    const newStatus = finalVerdict.label;
+                    // Update status based on the complex verdict
+                    const newStatus = finalVerdict.label.startsWith('FAILED') ? 'FAILED' : finalVerdict.label;
                     if (trainee.status !== newStatus) {
                         updateTrainee(index, { status: newStatus });
                     }
@@ -285,24 +317,26 @@
                     </div>
 
 
-                    {/* --- DISQUALIFICATION SECTION --- */}
+                    {/* --- DISQUALIFICATION SECTION (UPDATED) --- */}
                     {trainee.status === 'DISQUALIFIED' && (
                         <div className="p-4 bg-red-900/30 border border-red-700 rounded-md space-y-3">
                             <h5 className="text-md font-bold text-red-300">🚨 Disqualification Details</h5>
                             <SelectField
-                                label="Reason"
+                                label="Reason for Disqualification"
                                 value={trainee.disqualification?.reason || ''}
                                 onChange={(e) => handleDisqualificationChange('reason', e.target.value)}
-                                options={[
-                                    { value: '', label: 'Select Reason...' },
-                                    { value: 'Inappropriate Language', label: 'Inappropriate Language' },
-                                    { value: 'Exploiting', label: 'Exploiting' },
-                                    { value: 'Toxic Behavior', label: 'Toxic Behavior' },
-                                    { value: 'Ignoring Orders', label: 'Ignoring Orders' },
-                                    { value: 'Other', label: 'Other' }
-                                ]}
+                                options={DisqualificationReasonOptions}
                                 required
                             />
+                            {trainee.disqualification?.reason === 'Other' && (
+                                <InputField
+                                    label="Specify Other Reason"
+                                    placeholder="Briefly explain the disqualification reason"
+                                    value={trainee.disqualification?.otherReason || ''}
+                                    onChange={(e) => handleDisqualificationChange('otherReason', e.target.value)}
+                                    required
+                                />
+                            )}
                             <InputField
                                 label="Proof Link"
                                 placeholder="Link to video/screenshot proof"
@@ -344,7 +378,7 @@
                             <h5 className="text-md font-bold text-gray-300 border-b border-slate-700 pb-2 pt-2">📣 Mod Call Section (Max 20 Marks)</h5>
                             <div className="grid grid-cols-2 gap-4">
                                 <RadioGroup 
-                                    label="Did the trainee use good SPAG?" 
+                                    label="Did the trainee use good SPAG? (**Auto-Fail if No**)" 
                                     name={`spag-${index}`} 
                                     selected={trainee.assessment?.moderation?.goodSpag || ''} 
                                     onChange={(val) => handleAssessmentChange('moderation', 'goodSpag', val)} 
@@ -358,14 +392,14 @@
                                     options={[{ value: 'yes', label: 'Yes (+5)' }, { value: 'no', label: 'No (0)' }]}
                                 />
                                 <RadioGroup 
-                                    label="Did the trainee ask for proof?" 
+                                    label="Did the trainee ask for proof? (**Auto-Fail if No**)" 
                                     name={`proof-${index}`} 
                                     selected={trainee.assessment?.moderation?.askedForProof || ''} 
                                     onChange={(val) => handleAssessmentChange('moderation', 'askedForProof', val)} 
                                     options={[{ value: 'yes', label: 'Yes (+5)' }, { value: 'no', label: 'No (0)' }]}
                                 />
                                 <RadioGroup 
-                                    label="Did the trainee punish correctly?" 
+                                    label="Did the trainee punish correctly? (Marks deducted if No)" 
                                     name={`punish-${index}`} 
                                     selected={trainee.assessment?.moderation?.punishedCorrectly || ''} 
                                     onChange={(val) => handleAssessmentChange('moderation', 'punishedCorrectly', val)} 
@@ -398,7 +432,7 @@
                                     required
                                 />
                                 <RadioGroup 
-                                    label="Did the trainee spot/neutralize the sniper?" 
+                                    label="Did the trainee spot/neutralize the sniper? (**Auto-Fail if No**)" 
                                     name={`sniper-${index}`} 
                                     selected={trainee.assessment?.weaponHandling?.spottedSniper || ''} 
                                     onChange={(val) => handleAssessmentChange('weaponHandling', 'spottedSniper', val)} 
@@ -433,6 +467,7 @@
             };
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
             const [coTrainerRobloxUsername, setCoTrainerRobloxUsername] = useState('');
+            const [dashboardKey, setDashboardKey] = useState(''); 
             const [trainees, setTrainees] = useState([initialTrainee]);
             const [submissionStatus, setSubmissionStatus] = useState(null); 
             const [error, setError] = useState(null);
@@ -458,6 +493,9 @@
                 if (!trainerRobloxUsername.trim()) {
                     return "Trainer Roblox Username is required.";
                 }
+                if (!dashboardKey.trim()) { 
+                    return "Dashboard Key/Password is required for submission.";
+                }
                 if (trainees.length === 0) {
                     return "At least one trainee must be added.";
                 }
@@ -468,7 +506,10 @@
                     }
                     if (trainee.status === 'DISQUALIFIED') {
                         if (!trainee.disqualification?.reason || !trainee.disqualification?.proofLink) {
-                            return `Disqualification details are required for ${trainee.traineeRobloxUsername}.`;
+                            return `Disqualification reason and proof link are required for ${trainee.traineeRobloxUsername}.`;
+                        }
+                         if (trainee.disqualification?.reason === 'Other' && !trainee.disqualification?.otherReason) {
+                            return `Please specify the 'Other' disqualification reason for ${trainee.traineeRobloxUsername}.`;
                         }
                     } else if (trainee.status === 'PENDING') {
                         return `Final status must be set for all trainees.`;
@@ -492,19 +533,39 @@
                 }
 
                 const payload = {
+                    key: dashboardKey, 
                     trainerRobloxUsername,
                     coTrainerRobloxUsername: coTrainerRobloxUsername.trim() || null,
                     timestamp: new Date().toISOString(),
                     trainees: trainees.map(t => {
-                        const marks = calculateTraineeMarks(t); // Use the fixed core function
+                        const { score, isAutoFail } = calculateTraineeMarks(t); 
+
+                        let finalStatus = t.status;
+                        let finalMarks = score;
+
+                        if (t.status === 'PASSED' || t.status === 'FAILED') {
+                            if (isAutoFail) {
+                                finalStatus = 'FAILED';
+                            } else if (score < 30) {
+                                finalStatus = 'FAILED';
+                            } else {
+                                finalStatus = 'PASSED';
+                            }
+                        }
+                        
+                        let disqualificationReason = t.disqualification?.reason;
+                        if (disqualificationReason === 'Other') {
+                            disqualificationReason = `Other: ${t.disqualification?.otherReason}`;
+                        }
 
                         return {
                             traineeDiscordId: t.traineeDiscordId,
                             traineeRobloxUsername: t.traineeRobloxUsername,
-                            status: t.status,
-                            totalMarks: marks,
+                            status: finalStatus,
+                            totalMarks: finalMarks,
                             assessment: (t.status !== 'DISQUALIFIED' && t.status !== 'PENDING') ? t.assessment : null,
-                            disqualification: t.status === 'DISQUALIFIED' ? t.disqualification : null
+                            disqualification: t.status === 'DISQUALIFIED' ? 
+                                { reason: disqualificationReason, proofLink: t.disqualification.proofLink } : null
                         }
                     })
                 };
@@ -524,6 +585,7 @@
                         // Reset form fields
                         setTrainerRobloxUsername('');
                         setCoTrainerRobloxUsername('');
+                        setDashboardKey(''); 
                         setTrainees([initialTrainee]);
                     } else {
                         console.error('API Post Failed:', response.status);
@@ -544,8 +606,8 @@
             return (
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="p-4 bg-slate-800 rounded-lg shadow-xl space-y-4">
-                        <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Trainer Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Trainer & Security Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <InputField 
                                 label="Trainer Roblox Username" 
                                 placeholder="YourUsername" 
@@ -558,6 +620,14 @@
                                 placeholder="CoTrainerUsername" 
                                 value={coTrainerRobloxUsername} 
                                 onChange={(e) => setCoTrainerRobloxUsername(e.target.value)}
+                            />
+                            <InputField 
+                                label="Dashboard Key/Password" 
+                                type="password" 
+                                placeholder="Secret Key" 
+                                value={dashboardKey} 
+                                onChange={(e) => setDashboardKey(e.target.value)}
+                                required
                             />
                         </div>
                     </div>
@@ -620,7 +690,7 @@
             );
         };
 
-        // Voice Verification Component
+        // Voice Verification Component (omitted for brevity, no change needed)
         const VoiceVerificationTab = ({ db, userId }) => {
             const initialTrainee = {
                 traineeDiscordId: '',
@@ -628,6 +698,7 @@
                 ageRange: '13-15' 
             };
             const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
+            const [dashboardKey, setDashboardKey] = useState(''); 
             const [trainees, setTrainees] = useState([initialTrainee]);
             const [submissionStatus, setSubmissionStatus] = useState(null);
             const [error, setError] = useState(null);
@@ -647,6 +718,7 @@
 
             const validateForm = () => {
                 if (!trainerRobloxUsername.trim()) return "Trainer Roblox Username is required.";
+                if (!dashboardKey.trim()) return "Dashboard Key/Password is required for submission."; 
                 if (trainees.length === 0) return "At least one trainee must be added.";
                 for (const trainee of trainees) {
                     if (!trainee.traineeDiscordId || !trainee.traineeRobloxUsername) {
@@ -667,6 +739,7 @@
                 }
 
                 const payload = {
+                    key: dashboardKey, 
                     trainerRobloxUsername,
                     date: new Date().toISOString(),
                     trainees: trainees
@@ -686,6 +759,7 @@
                         setSubmissionStatus('success');
                         setTrainees([initialTrainee]); // Reset form
                         setTrainerRobloxUsername('');
+                        setDashboardKey(''); 
                     } else {
                         console.error('API Post Failed:', response.status);
                         const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
@@ -749,14 +823,24 @@
             return (
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="p-4 bg-slate-800 rounded-lg shadow-xl space-y-4">
-                        <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Trainer Details</h3>
-                        <InputField 
-                            label="Trainer Roblox Username" 
-                            placeholder="YourUsername" 
-                            value={trainerRobloxUsername} 
-                            onChange={(e) => setTrainerRobloxUsername(e.target.value)}
-                            required
-                        />
+                        <h3 className="text-xl font-bold text-gray-100 border-b border-slate-700 pb-2">Trainer & Security Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputField 
+                                label="Trainer Roblox Username" 
+                                placeholder="YourUsername" 
+                                value={trainerRobloxUsername} 
+                                onChange={(e) => setTrainerRobloxUsername(e.target.value)}
+                                required
+                            />
+                            <InputField 
+                                label="Dashboard Key/Password" 
+                                type="password" 
+                                placeholder="Secret Key" 
+                                value={dashboardKey} 
+                                onChange={(e) => setDashboardKey(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div className="p-4 bg-slate-800 rounded-lg shadow-xl space-y-4">
@@ -816,11 +900,13 @@
             );
         };
 
-        // Announcement Tab Component 
+
+        // Announcement Tab Component (omitted for brevity, no change needed)
         const AnnounceTrainingTab = ({ db, userId }) => {
              const [trainerRobloxUsername, setTrainerRobloxUsername] = useState('');
              const [time, setTime] = useState('');
              const [additionalInfo, setAdditionalInfo] = useState('');
+             const [dashboardKey, setDashboardKey] = useState(''); 
              const [submissionStatus, setSubmissionStatus] = useState(null); 
              const [error, setError] = useState(null);
              
@@ -836,15 +922,16 @@
                  setSubmissionStatus('loading');
                  setError(null);
                  
-                 if (!trainerRobloxUsername.trim() || !time.trim() || !additionalInfo.trim()) {
+                 if (!trainerRobloxUsername.trim() || !time.trim() || !additionalInfo.trim() || !dashboardKey.trim()) {
                      setSubmissionStatus('error');
-                     setError('Trainer Name, Time, and Additional Information are required.');
+                     setError('Trainer Name, Time, Info, and Dashboard Key are required.');
                      setTimeout(() => setSubmissionStatus(null), 3000);
                      setTimeout(() => setError(null), 5000);
                      return;
                  }
 
                  const payload = {
+                    key: dashboardKey, 
                     trainerRobloxUsername,
                     time,
                     additionalInfo
@@ -859,8 +946,8 @@
 
                     if (response.ok) {
                         setSubmissionStatus('success');
-                        // Do not clear Trainer Name or Time, only the info field
                         setAdditionalInfo(''); 
+                        setDashboardKey(''); 
                     } else {
                         console.error('API Post Failed:', response.status);
                         const errorData = await response.json().catch(() => ({ error: 'No details from server.' }));
@@ -888,7 +975,7 @@
                         </div>
                     )}
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <InputField
                             label="Trainer's Roblox Username"
                             placeholder="YourUsername"
@@ -901,6 +988,14 @@
                             placeholder="e.g., Oct 29 @ 10:00 PM"
                             value={time}
                             onChange={(e) => setTime(e.target.value)}
+                            required
+                        />
+                        <InputField 
+                            label="Dashboard Key/Password" 
+                            type="password" 
+                            placeholder="Secret Key" 
+                            value={dashboardKey} 
+                            onChange={(e) => setDashboardKey(e.target.value)}
                             required
                         />
                     </div>
@@ -939,6 +1034,7 @@
                 </div>
              );
         };
+
 
         // --- MAIN APP COMPONENT ---
 
