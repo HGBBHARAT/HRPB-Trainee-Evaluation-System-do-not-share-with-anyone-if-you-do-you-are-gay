@@ -7,24 +7,26 @@
     <script>
         /* --- CONFIGURATION START --- */
         const CONFIG = {
-            WEBHOOK_URL: "YOUR_WEBHOOK_URL_HERE", // Replace with your Discord Webhook URL
-            ANNOUNCE_ROLE_ID: "YOUR_ROLE_ID_HERE", // Replace with the Role ID you want to ping
+            WEBHOOK_URL: "YOUR_WEBHOOK_URL_HERE",
+            ANNOUNCE_ROLE_ID: "YOUR_ROLE_ID_HERE",
             ACCESS_KEY: "HRMC-X9-7721-OMEGA"
         };
         /* --- CONFIGURATION END --- */
     </script>
     <style>
         :root {
-            --bg-deep: #02050f;      /* Deep Dark Blue */
-            --bg-panel: #0a132d;     /* Lighter Blue */
-            --neon-pink: #ff00ff;    /* Neon Pink */
-            --neon-blue: #00f2ff;    /* Neon Blue */
-            --gold: #d4af37;         /* Cyber Gold */
+            --bg-deep: #02050f;
+            --bg-panel: #0a132d;
+            --neon-pink: #ff00ff;
+            --neon-blue: #00f2ff;
+            --gold: #d4af37;
             --text: #e0e0e0;
+            --fail: #ff0000;
+            --pass: #00ff00;
         }
 
         body {
-            font-family: 'Segoe UI', 'Courier New', monospace;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-deep);
             color: var(--text);
             margin: 0;
@@ -32,17 +34,15 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* Login Screen Styles */
+        /* Login Screen */
         #login-screen {
             background: var(--bg-panel);
             padding: 40px;
             border: 2px solid var(--neon-pink);
             box-shadow: 0 0 20px var(--neon-pink);
             text-align: center;
-            border-radius: 5px;
         }
 
         .login-input {
@@ -52,20 +52,16 @@
             padding: 12px;
             width: 250px;
             text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 3px;
             margin-bottom: 20px;
         }
 
-        /* Dashboard Styles */
+        /* Dashboard */
         #dashboard {
             display: none;
             width: 95%;
             max-width: 1000px;
             background: var(--bg-panel);
             border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
-            border-radius: 5px;
         }
 
         .tabs { display: flex; border-bottom: 2px solid var(--neon-pink); }
@@ -78,40 +74,63 @@
         .content { padding: 30px; display: none; }
         .content.active { display: block; }
 
-        input, textarea, select {
+        input, textarea {
             background: #02050f; border: 1px solid var(--neon-blue);
             color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-top: 8px;
         }
 
-        /* Custom Toggle Switch (YES/NO) */
+        /* Toggle Buttons */
         .toggle-group { display: flex; gap: 5px; margin: 10px 0; }
         .t-btn {
-            padding: 8px 20px; cursor: pointer; border: 1px solid var(--neon-pink);
-            background: transparent; color: white; flex: 1; text-align: center;
+            padding: 10px; cursor: pointer; border: 1px solid var(--neon-pink);
+            background: transparent; color: white; flex: 1; text-align: center; font-weight: bold;
         }
-        .t-btn.yes-active { background: #00ff00; color: #000; border-color: #00ff00; font-weight: bold; }
-        .t-btn.no-active { background: #ff0000; color: #fff; border-color: #ff0000; font-weight: bold; }
+        .t-btn.yes-active { background: var(--pass); color: #000; border-color: var(--pass); }
+        .t-btn.no-active { background: var(--fail); color: #fff; border-color: var(--fail); }
 
-        .trainee-entry { border: 1px solid rgba(255, 0, 255, 0.3); padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-        
+        /* Batch Summary & Removal */
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--neon-blue);
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .status-badge {
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .remove-btn {
+            background: var(--fail);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         #publish-btn {
             background: var(--bg-deep); color: var(--neon-blue);
             border: 2px solid var(--neon-blue); width: 100%; padding: 20px;
-            font-size: 1.4rem; cursor: pointer; font-weight: bold; margin-top: 10px;
+            font-size: 1.5rem; cursor: pointer; font-weight: bold; margin-top: 20px;
         }
-        #publish-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
 
-        .summary-card { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--neon-blue); padding: 10px; margin: 5px 0; }
+        #publish-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h1 style="color: var(--gold); margin-bottom: 5px;">HIGH ROCK BORDER ROLEPLAY</h1>
-        <p style="color: var(--neon-blue); margin-bottom: 25px;">ENCRYPTED ACCESS REQUIRED</p>
-        <input type="password" id="pass-field" class="login-input" placeholder="••••••••">
+        <h1 style="color: var(--gold);">HIGH ROCK BORDER ROLEPLAY</h1>
+        <input type="password" id="pass-field" class="login-input" placeholder="ACCESS KEY">
         <br>
-        <button onclick="unlockTerminal()" style="background: var(--neon-pink); color: white; padding: 12px 40px; border: none; font-weight: bold; cursor: pointer;">DECRYPT</button>
+        <button onclick="unlock()" style="background: var(--neon-pink); color: white; padding: 12px 40px; border: none; font-weight: bold; cursor: pointer;">DECRYPT</button>
     </div>
 
     <div id="dashboard">
@@ -121,25 +140,25 @@
         </div>
 
         <div id="ann-content" class="content active">
-            <h2 style="color: var(--gold)">BROADCAST TERMINAL</h2>
+            <h2 style="color: var(--gold)">ANNOUNCEMENT TERMINAL</h2>
             <label>Trainer User ID</label><input type="text" id="ann-uid">
             <label>Timezone</label><input type="text" id="ann-tz">
-            <label>Local Time</label><input type="text" id="ann-time" placeholder="e.g. 7:00 PM">
+            <label>Local Time</label><input type="text" id="ann-time">
             <label>Location</label><input type="text" id="ann-loc">
             <label>Additional Info</label><textarea id="ann-info"></textarea>
             <br><br>
-            <button onclick="postAnnouncement()" style="background: var(--neon-blue); color: black; padding: 15px; border: none; width: 100%; font-weight: bold; cursor: pointer;">SEND TO DISCORD</button>
+            <button onclick="postAnn()" style="background: var(--neon-blue); color: black; padding: 15px; border: none; width: 100%; font-weight: bold; cursor: pointer;">BROADCAST</button>
         </div>
 
         <div id="res-content" class="content">
-            <h2 style="color: var(--gold)">MULTI-TRAINEE COMPILER (MAX 5)</h2>
+            <h2 style="color: var(--gold)">RESULT BATCHER</h2>
             <div style="display: flex; gap: 15px;">
-                <div style="flex:1"><label>Host Roblox Username</label><input type="text" id="h-rblx"></div>
+                <div style="flex:1"><label>Host Roblox</label><input type="text" id="h-rblx"></div>
                 <div style="flex:1"><label>Host Discord ID</label><input type="text" id="h-id"></div>
             </div>
 
-            <div class="trainee-entry" style="margin-top: 25px;">
-                <h4 style="color: var(--neon-pink); margin: 0 0 10px 0;">TRAINEE DATA</h4>
+            <div style="border: 1px dashed var(--neon-pink); padding: 15px; margin-top: 25px;">
+                <h3 style="color: var(--neon-pink); margin:0;">TRAINEE INPUT</h3>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="t-rblx" placeholder="Roblox Username">
                     <input type="text" id="t-id" placeholder="Discord User ID">
@@ -147,127 +166,137 @@
                 <label>Knowledge Score (0-10)</label><input type="number" id="t-know" max="10">
                 <label>Knowledge Notes</label><textarea id="t-know-notes"></textarea>
 
-                <label>Mod-Call Section</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div><span>Proper SPAG?</span> <div class="toggle-group"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">YES</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">NO</button></div></div>
-                    <div><span>Healed Host?</span> <div class="toggle-group"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">YES</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">NO</button></div></div>
-                    <div><span>Punished Correct?</span> <div class="toggle-group"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">YES</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">NO</button></div></div>
-                    <div><span>Evidence Used?</span> <div class="toggle-group"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">YES</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">NO</button></div></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:15px;">
+                    <div>SPAG? <div class="toggle-group"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">YES</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">NO</button></div></div>
+                    <div>Healed Host? <div class="toggle-group"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">YES</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">NO</button></div></div>
+                    <div>Punished Correct? <div class="toggle-group"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">YES</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">NO</button></div></div>
+                    <div>Evidence Used? <div class="toggle-group"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">YES</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">NO</button></div></div>
                 </div>
                 <label>Mod-Call Notes</label><textarea id="t-mod-notes"></textarea>
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button onclick="saveTrainee(false)" style="flex:1; background: var(--neon-blue); border:none; padding:10px; font-weight:bold;">ADD TRAINEE</button>
-                    <button onclick="saveTrainee(true)" style="flex:1; background: var(--neon-pink); border:none; padding:10px; color:white; font-weight:bold;">DISQUALIFY</button>
+                    <button onclick="save(false)" style="flex:1; background: var(--neon-blue); border:none; padding:12px; font-weight:bold;">ADD PASS/FAIL</button>
+                    <button onclick="save(true)" style="flex:1; background: var(--neon-pink); border:none; padding:12px; color:white; font-weight:bold;">DISQUALIFY</button>
                 </div>
             </div>
 
-            <div id="batch-summary"></div>
-            <button id="publish-btn" onclick="sendAllResults()">PUBLISH BATCH RESULTS</button>
+            <div id="batch-list"></div>
+            <button id="publish-btn" onclick="publish()">PUBLISH RESULTS</button>
         </div>
     </div>
 
     <script>
         let batch = [];
-        let curTogs = { spag: null, heal: null, punish: null, evid: null };
+        let toggles = { spag: null, heal: null, punish: null, evid: null };
 
-        function unlockTerminal() {
+        function unlock() {
             if(document.getElementById('pass-field').value === CONFIG.ACCESS_KEY) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-            } else { alert("INVALID ACCESS KEY"); }
+            } else { alert("ACCESS DENIED"); }
         }
 
-        function switchTab(type) {
+        function switchTab(t) {
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(type + '-content').classList.add('active');
-            document.getElementById('tab-' + type).classList.add('active');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(t + '-content').classList.add('active');
+            document.getElementById('tab-' + t).classList.add('active');
         }
 
-        function setTog(key, val) {
-            curTogs[key] = val;
-            const prefix = key.charAt(0);
-            document.getElementById(prefix + '-y').className = val ? 't-btn yes-active' : 't-btn';
-            document.getElementById(prefix + '-n').className = !val ? 't-btn no-active' : 't-btn';
+        function setTog(k, v) {
+            toggles[k] = v;
+            const p = k.charAt(0);
+            document.getElementById(p + '-y').className = v ? 't-btn yes-active' : 't-btn';
+            document.getElementById(p + '-n').className = !v ? 't-btn no-active' : 't-btn';
         }
 
-        function saveTrainee(isDQ) {
-            if(batch.length >= 5) return alert("Batch full (5 Trainees max)");
-            let dqReason = isDQ ? prompt("Enter DQ Reason:") : "";
-            if(isDQ && !dqReason) return;
+        function save(dq) {
+            if(batch.length >= 5) return alert("Max 5 trainees.");
+            let reason = dq ? prompt("DQ Reason:") : "";
+            if(dq && !reason) return;
 
-            const knowVal = parseInt(document.getElementById('t-know').value) || 0;
-            const modVal = Object.values(curTogs).filter(v => v === true).length * 2.5;
-            const total = knowVal + modVal;
+            const know = parseInt(document.getElementById('t-know').value) || 0;
+            const mod = Object.values(toggles).filter(v => v === true).length * 2.5;
+            const total = know + mod;
+            const stat = dq ? "DQ" : (total >= 14 ? "PASS" : "FAIL");
 
             batch.push({
                 rblx: document.getElementById('t-rblx').value,
                 id: document.getElementById('t-id').value,
                 score: total,
-                status: isDQ ? "DQ" : (total >= 14 ? "PASS" : "FAIL"),
-                reason: dqReason,
+                status: stat,
+                reason: reason,
                 knowNotes: document.getElementById('t-know-notes').value,
-                modNotes: document.getElementById('t-mod-notes').value,
-                raw: {...curTogs}
+                modNotes: document.getElementById('t-mod-notes').value
             });
-
-            renderBatch();
-            resetEntry();
+            render();
+            clear();
         }
 
-        function renderBatch() {
-            const out = document.getElementById('batch-summary');
-            out.innerHTML = "<h4>BATCH READY:</h4>";
+        function render() {
+            const out = document.getElementById('batch-list');
+            out.innerHTML = "<h3>CURRENT BATCH:</h3>";
             batch.forEach((t, i) => {
-                out.innerHTML += `<div class="summary-card">${i+1}. ${t.rblx} | ${t.score}/20 | [${t.status}]</div>`;
+                const color = t.status === "PASS" ? "var(--pass)" : "var(--fail)";
+                out.innerHTML += `
+                <div class="summary-item">
+                    <div>
+                        <strong>${t.rblx}</strong> (${t.id}) <br>
+                        Score: ${t.score}/20 | <span class="status-badge" style="color:${color}">${t.status}</span>
+                    </div>
+                    <button class="remove-btn" onclick="remove(${i})">REMOVE</button>
+                </div>`;
             });
         }
 
-        function resetEntry() {
+        function remove(index) {
+            batch.splice(index, 1);
+            render();
+        }
+
+        function clear() {
             ['t-rblx', 't-id', 't-know', 't-know-notes', 't-mod-notes'].forEach(id => document.getElementById(id).value = "");
-            curTogs = { spag: null, heal: null, punish: null, evid: null };
+            toggles = { spag: null, heal: null, punish: null, evid: null };
             document.querySelectorAll('.t-btn').forEach(b => b.className = 't-btn');
         }
 
-        async function postAnnouncement() {
-            const payload = {
+        async function postAnn() {
+            const body = {
                 content: `<@${document.getElementById('ann-uid').value}> <@&${CONFIG.ANNOUNCE_ROLE_ID}>`,
                 embeds: [{
-                    title: "⚔️ HIGH ROCK BORDER TRAINING",
+                    title: "⚔️ HIGH ROCK TRAINING",
                     color: 16711935,
                     fields: [
                         { name: "Time", value: `${document.getElementById('ann-time').value} ${document.getElementById('ann-tz').value}` },
                         { name: "Location", value: document.getElementById('ann-loc').value },
                         { name: "Notes", value: document.getElementById('ann-info').value || "None" }
-                    ],
-                    footer: { text: "High Rock Military Command" }
+                    ]
                 }]
             };
-            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("ANNOUNCEMENT BROADCASTED");
+            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            alert("Sent.");
         }
 
-        async function sendAllResults() {
-            if(batch.length === 0) return alert("No trainees added!");
+        async function publish() {
+            if(batch.length === 0) return alert("No data.");
             const hId = document.getElementById('h-id').value;
             let pings = `<@${hId}> `;
             batch.forEach(t => pings += `<@${t.id}> `);
 
             const embeds = batch.map(t => ({
-                title: `TRAINING EVALUATION: ${t.status}`,
+                title: `EVALUATION: ${t.status}`,
                 color: t.status === "PASS" ? 65280 : 16711680,
                 fields: [
                     { name: "Host", value: document.getElementById('h-rblx').value + ` (${hId})`, inline: true },
                     { name: "Candidate", value: t.rblx + ` (${t.id})`, inline: true },
-                    { name: "Total Score", value: `${t.score}/20`, inline: true },
-                    { name: "Evaluation", value: `Knowledge: ${t.knowNotes || "None"}\nMod-Call: ${t.modNotes || "None"}` },
-                    ...(t.reason ? [{ name: "DQ Reason", value: t.reason }] : [])
+                    { name: "Score", value: `${t.score}/20`, inline: true },
+                    { name: "Notes", value: `K: ${t.knowNotes}\nM: ${t.modNotes}` },
+                    ...(t.reason ? [{ name: "DQ", value: t.reason }] : [])
                 ]
             }));
 
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds: embeds }) });
-            alert("RESULTS PUBLISHED. RELOADING...");
+            alert("Published.");
             location.reload();
         }
     </script>
