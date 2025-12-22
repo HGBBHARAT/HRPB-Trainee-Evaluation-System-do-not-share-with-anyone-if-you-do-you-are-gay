@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRBR | Cyber Command</title>
+    <title>HRBRP | Training Asssit</title>
     <script>
         /* --- CONFIGURATION START --- */
         const CONFIG = {
@@ -104,6 +104,18 @@
             font-size: 1.5rem; cursor: pointer; font-weight: bold; margin-top: 20px;
         }
         #publish-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+        
+        .full-width-btn {
+            width: 100%;
+            background: var(--neon-pink);
+            border: none;
+            padding: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -156,9 +168,8 @@
                 </div>
                 <label>Mod-Call Notes</label><textarea id="t-mod-notes"></textarea>
 
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button onclick="save(false)" style="flex:1; background: var(--neon-blue); border:none; padding:12px; font-weight:bold; cursor:pointer;">ADD TRAINEE</button>
-                    <button onclick="save(true)" style="flex:1; background: var(--neon-pink); border:none; padding:12px; color:white; font-weight:bold; cursor:pointer;">DISQUALIFY</button>
+                <div style="margin-top: 15px;">
+                    <button onclick="save(true)" class="full-width-btn">DISQUALIFY TRAINEE</button>
                 </div>
             </div>
 
