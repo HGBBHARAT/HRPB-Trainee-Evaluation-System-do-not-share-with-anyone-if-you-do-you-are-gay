@@ -36,7 +36,6 @@
             min-height: 100vh;
         }
 
-        /* Login Screen */
         #login-screen {
             background: var(--bg-panel);
             padding: 40px;
@@ -55,7 +54,6 @@
             margin-bottom: 20px;
         }
 
-        /* Dashboard */
         #dashboard {
             display: none;
             width: 95%;
@@ -79,7 +77,6 @@
             color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-top: 8px;
         }
 
-        /* Toggle Buttons */
         .toggle-group { display: flex; gap: 5px; margin: 10px 0; }
         .t-btn {
             padding: 10px; cursor: pointer; border: 1px solid var(--neon-pink);
@@ -88,7 +85,6 @@
         .t-btn.yes-active { background: var(--pass); color: #000; border-color: var(--pass); }
         .t-btn.no-active { background: var(--fail); color: #fff; border-color: var(--fail); }
 
-        /* Batch Summary & Removal */
         .summary-item {
             display: flex;
             justify-content: space-between;
@@ -99,28 +95,14 @@
             margin: 10px 0;
         }
 
-        .status-badge {
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 3px;
-            text-transform: uppercase;
-        }
-
-        .remove-btn {
-            background: var(--fail);
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        .status-badge { font-weight: bold; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; }
+        .remove-btn { background: var(--fail); color: white; border: none; padding: 5px 15px; cursor: pointer; font-weight: bold; }
 
         #publish-btn {
             background: var(--bg-deep); color: var(--neon-blue);
             border: 2px solid var(--neon-blue); width: 100%; padding: 20px;
             font-size: 1.5rem; cursor: pointer; font-weight: bold; margin-top: 20px;
         }
-
         #publish-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
     </style>
 </head>
@@ -175,8 +157,8 @@
                 <label>Mod-Call Notes</label><textarea id="t-mod-notes"></textarea>
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button onclick="save(false)" style="flex:1; background: var(--neon-blue); border:none; padding:12px; font-weight:bold;">ADD PASS/FAIL</button>
-                    <button onclick="save(true)" style="flex:1; background: var(--neon-pink); border:none; padding:12px; color:white; font-weight:bold;">DISQUALIFY</button>
+                    <button onclick="save(false)" style="flex:1; background: var(--neon-blue); border:none; padding:12px; font-weight:bold; cursor:pointer;">ADD TRAINEE</button>
+                    <button onclick="save(true)" style="flex:1; background: var(--neon-pink); border:none; padding:12px; color:white; font-weight:bold; cursor:pointer;">DISQUALIFY</button>
                 </div>
             </div>
 
@@ -274,7 +256,7 @@
                 }]
             };
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
-            alert("Sent.");
+            alert("Broadcast sent.");
         }
 
         async function publish() {
@@ -296,7 +278,7 @@
             }));
 
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds: embeds }) });
-            alert("Published.");
+            alert("Results published.");
             location.reload();
         }
     </script>
