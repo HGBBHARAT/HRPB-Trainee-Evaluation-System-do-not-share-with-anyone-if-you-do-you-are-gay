@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMC | Command Portal</title>
+    <title>HRBR | Cyber Command</title>
     <style>
+        /* --- CONFIGURATION START --- */
+        const CONFIG = {
+            WEBHOOK: "YOUR_WEBHOOK_URL_HERE",
+            ANNOUNCE_ROLE: "YOUR_ROLE_ID_HERE",
+            PASSWORD: "HRMC-X9-7721-OMEGA"
+        };
+        /* --- CONFIGURATION END --- */
+
         :root {
-            --army-green: #2e3b23;
-            --olive: #4b5d3f;
-            --accent: #d4af37;
-            --text: #f0f0f0;
-            --danger: #8b0000;
-            --success: #228b22;
+            --bg-deep: #050a1f;      /* Dark Blue background */
+            --bg-panel: #0d1b3e;     /* Light Blue background */
+            --neon-pink: #ff00ff;    /* Neon Pink lines */
+            --neon-blue: #00f2ff;    /* Neon Light Blue accent */
+            --gold: #d4af37;         /* Gold text */
+            --text: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-deep);
             color: var(--text);
             margin: 0;
             display: flex;
@@ -25,109 +33,116 @@
             min-height: 100vh;
         }
 
-        /* Login Screen */
         #login-screen {
-            background: var(--army-green);
-            padding: 2rem;
-            border-radius: 8px;
-            border: 2px solid var(--accent);
+            background: var(--bg-panel);
+            padding: 2.5rem;
+            border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
             text-align: center;
         }
 
-        input {
-            padding: 10px;
-            border-radius: 4px;
-            border: none;
-            margin: 10px 0;
-        }
-
-        button {
-            background: var(--accent);
-            color: black;
-            font-weight: bold;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        /* Main Dashboard */
         #dashboard {
             display: none;
-            width: 90%;
-            max-width: 900px;
-            background: #2a2a2a;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            width: 95%;
+            max-width: 1000px;
+            background: var(--bg-panel);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
         }
 
         .tabs {
             display: flex;
-            background: var(--army-green);
+            border-bottom: 2px solid var(--neon-pink);
         }
 
         .tab {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
-            border-bottom: 3px solid transparent;
+            color: var(--gold);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .tab.active {
-            border-bottom: 3px solid var(--accent);
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 0, 255, 0.1);
+            text-shadow: 0 0 10px var(--neon-pink);
         }
 
-        .content {
-            padding: 20px;
-            display: none;
-        }
-
+        .content { padding: 30px; display: none; }
         .content.active { display: block; }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--accent); font-weight: bold; }
+        label { color: var(--neon-blue); font-weight: bold; display: block; margin-top: 15px; }
         
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
+        input, textarea {
+            background: #050a1f;
+            border: 1px solid var(--neon-blue);
+            color: white;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
         }
 
-        .trainee-card {
-            background: #333;
-            padding: 10px;
+        /* Clickable Yes/No Toggles */
+        .toggle-group {
+            display: flex;
+            gap: 0;
             margin: 10px 0;
-            border-left: 4px solid var(--accent);
+            border: 1px solid var(--neon-pink);
+            width: fit-content;
+        }
+
+        .toggle-btn {
+            padding: 10px 25px;
+            cursor: pointer;
+            background: transparent;
+            color: white;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .toggle-btn.active-yes { background: #00ff00; color: black; }
+        .toggle-btn.active-no { background: #ff0000; color: white; }
+
+        .trainee-card {
+            border: 1px solid var(--neon-pink);
+            background: rgba(255, 0, 255, 0.05);
+            padding: 15px;
+            margin: 10px 0;
         }
 
         #publish-btn {
-            background: var(--success);
-            color: white;
+            background: var(--bg-deep);
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
             width: 100%;
             padding: 20px;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
             margin-top: 20px;
+            font-weight: bold;
         }
 
-        .summary-list {
-            margin-top: 20px;
-            border-top: 1px solid #444;
-            padding-top: 10px;
+        #publish-btn:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-blue);
         }
+
+        h2, h3 { color: var(--gold); text-shadow: 2px 2px black; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h2>HRMC SECURE ACCESS</h2>
-        <input type="password" id="access-pass" placeholder="Enter Access Key">
-        <br>
-        <button onclick="checkPass()">Login</button>
+        <h2>HIGH ROCK BORDER ROLEPLAY</h2>
+        <p style="color:var(--neon-blue)">ENCRYPTED ACCESS REQUIRED</p>
+        <input type="password" id="access-pass" style="text-align:center">
+        <br><br>
+        <button onclick="checkPass()" style="background:var(--neon-pink); color:white; padding:10px 30px; border:none; cursor:pointer;">DECRYPT</button>
     </div>
 
     <div id="dashboard">
@@ -137,207 +152,188 @@
         </div>
 
         <div id="announce" class="content active">
-            <h3>Post Training Announcement</h3>
-            <div class="form-group">
-                <label>Trainer User ID</label>
-                <input type="text" id="ann-uid" placeholder="1234567890...">
-            </div>
-            <div class="form-group">
-                <label>Timezone</label>
-                <input type="text" id="ann-tz" placeholder="e.g. EST">
-            </div>
-            <div class="form-group">
-                <label>Local Time</label>
-                <input type="text" id="ann-time" placeholder="e.g. 6:00 PM">
-            </div>
-            <div class="form-group">
-                <label>Location</label>
-                <input type="text" id="ann-loc" placeholder="Training Grounds">
-            </div>
-            <div class="form-group">
-                <label>Additional Info</label>
-                <textarea id="ann-info" style="width:100%; min-height:60px;"></textarea>
-            </div>
-            <button onclick="sendAnnounce()">Publish Announcement</button>
+            <h3>ANNOUNCEMENT TERMINAL</h3>
+            <label>Trainer User ID</label><input type="text" id="ann-uid">
+            <label>Timezone</label><input type="text" id="ann-tz">
+            <label>Local Time</label><input type="text" id="ann-time">
+            <label>Location</label><input type="text" id="ann-loc">
+            <label>Additional Info</label><textarea id="ann-info"></textarea>
+            <br><br>
+            <button onclick="sendAnnounce()" style="background:var(--neon-blue); padding:15px; border:none; width:100%; font-weight:bold;">BROADCAST TO DISCORD</button>
         </div>
 
         <div id="results" class="content">
-            <h3>Multi-Trainee Evaluation Form</h3>
-            <div style="display: flex; gap: 20px; border-bottom: 1px solid #444; padding-bottom: 15px;">
-                <div class="form-group">
-                    <label>Trainer Roblox Username</label>
-                    <input type="text" id="res-host-rblx">
-                </div>
-                <div class="form-group">
-                    <label>Trainer Discord ID</label>
-                    <input type="text" id="res-host-id">
-                </div>
+            <h3>RESULT COMPILER (MAX 5)</h3>
+            <div style="display:flex; gap:20px;">
+                <div style="flex:1"><label>Trainer Roblox</label><input type="text" id="res-host-rblx"></div>
+                <div style="flex:1"><label>Trainer Discord ID</label><input type="text" id="res-host-id"></div>
             </div>
 
-            <div id="trainee-input-area" style="margin-top:20px;">
-                <label>Trainee Roblox Username</label>
-                <input type="text" id="tr-rblx">
-                <label>Trainee Discord ID</label>
-                <input type="text" id="tr-id">
-                
+            <div style="border: 1px dashed var(--neon-pink); padding: 20px; margin-top: 20px;">
+                <label>Trainee Name & UID</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="tr-rblx" placeholder="Username">
+                    <input type="text" id="tr-id" placeholder="User ID">
+                </div>
+
                 <label>Knowledge Score (0-10)</label>
-                <input type="number" id="tr-know" max="10" min="0">
-                
+                <input type="number" id="tr-know" max="10">
                 <label>Knowledge Notes</label>
-                <textarea id="tr-know-notes" style="width:100%;"></textarea>
+                <textarea id="tr-know-notes"></textarea>
 
-                <div class="mod-call-area">
-                    <label>Mod-Call Section</label>
-                    <div class="toggle-container">Proper SPAG: <input type="checkbox" id="tr-spag"></div>
-                    <div class="toggle-container">Healed Trainer: <input type="checkbox" id="tr-heal"></div>
-                    <div class="toggle-container">Punished Correctly: <input type="checkbox" id="tr-punish"></div>
-                    <div class="toggle-container">Used Evidence: <input type="checkbox" id="tr-evid"></div>
-                    <label>Mod-Call Notes</label>
-                    <textarea id="tr-mod-notes" style="width:100%;"></textarea>
+                <label>Mod-Call Evaluation</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <span>Proper SPAG?</span>
+                        <div class="toggle-group" id="group-spag">
+                            <div class="toggle-btn" onclick="setToggle('spag', true)">YES</div>
+                            <div class="toggle-btn" onclick="setToggle('spag', false)">NO</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span>Healed Trainer?</span>
+                        <div class="toggle-group" id="group-heal">
+                            <div class="toggle-btn" onclick="setToggle('heal', true)">YES</div>
+                            <div class="toggle-btn" onclick="setToggle('heal', false)">NO</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span>Punished Correct?</span>
+                        <div class="toggle-group" id="group-punish">
+                            <div class="toggle-btn" onclick="setToggle('punish', true)">YES</div>
+                            <div class="toggle-btn" onclick="setToggle('punish', false)">NO</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span>Evidence Used?</span>
+                        <div class="toggle-group" id="group-evid">
+                            <div class="toggle-btn" onclick="setToggle('evid', true)">YES</div>
+                            <div class="toggle-btn" onclick="setToggle('evid', false)">NO</div>
+                        </div>
+                    </div>
                 </div>
+                <label>Mod-Call Notes</label>
+                <textarea id="tr-mod-notes"></textarea>
 
-                <div style="margin-top:15px; display:flex; gap:10px;">
-                    <button onclick="addTrainee(false)" style="background:var(--olive); color:white;">Add Trainee</button>
-                    <button onclick="addTrainee(true)" style="background:var(--danger); color:white;">Disqualify Trainee</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="addTrainee(false)" style="flex:1; background:var(--neon-blue); padding:10px; border:none; font-weight:bold;">ADD TRAINEE</button>
+                    <button onclick="addTrainee(true)" style="flex:1; background:var(--neon-pink); padding:10px; border:none; color:white; font-weight:bold;">DISQUALIFY</button>
                 </div>
             </div>
 
-            <div class="summary-list" id="summary-list">
-                </div>
-
-            <button id="publish-btn" onclick="publishResults()">Publish Results</button>
+            <div id="summary-list"></div>
+            <button id="publish-btn" onclick="publishResults()">PUBLISH RESULTS</button>
         </div>
     </div>
 
     <script>
-        const CONFIG = {
-            WEBHOOK: "YOUR_WEBHOOK_URL_HERE",
-            ANNOUNCE_ROLE: "YOUR_ROLE_ID_HERE",
-            PASSWORD: "HRMC-X9-7721-OMEGA"
-        };
-
+        // Internal state
         let traineeList = [];
+        let currentToggles = { spag: null, heal: null, punish: null, evid: null };
 
         function checkPass() {
-            const pass = document.getElementById('access-pass').value;
-            if(pass === CONFIG.PASSWORD) {
+            if(document.getElementById('access-pass').value === "HRMC-X9-7721-OMEGA") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-            } else { alert("ACCESS DENIED"); }
+            } else { alert("ACCESS DENIED: INCORRECT KEY"); }
         }
 
-        function showTab(tabId) {
+        function showTab(id) {
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('active');
         }
 
-        function sendAnnounce() {
-            const uid = document.getElementById('ann-uid').value;
-            const tz = document.getElementById('ann-tz').value;
-            const time = document.getElementById('ann-time').value;
-            const loc = document.getElementById('ann-loc').value;
-            const info = document.getElementById('ann-info').value;
-
-            const payload = {
-                content: `<@${uid}> <@&${CONFIG.ANNOUNCE_ROLE}>`,
-                embeds: [{
-                    title: "⚔️ TRAINING BEING HOSTED",
-                    color: 4541219,
-                    fields: [
-                        { name: "Curriculum", value: "Knowledge Section & Mod-Call Section", inline: false },
-                        { name: "Post-Action", value: "Followed by an optional Voice Verification", inline: false },
-                        { name: "When", value: `${time} ${tz}`, inline: true },
-                        { name: "Where", value: loc, inline: true },
-                        { name: "Additional Notes", value: info || "N/A" }
-                    ],
-                    footer: { text: "High Rock Military Corps" }
-                }]
-            };
-
-            fetch(CONFIG.WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
-            .then(() => alert("Announcement Sent!"));
+        function setToggle(key, val) {
+            currentToggles[key] = val;
+            const group = document.getElementById(`group-${key}`);
+            group.children[0].className = val === true ? 'toggle-btn active-yes' : 'toggle-btn';
+            group.children[1].className = val === false ? 'toggle-btn active-no' : 'toggle-btn';
         }
 
         function addTrainee(isDQ) {
-            if(traineeList.length >= 5) return alert("Max 5 trainees reached.");
+            if(traineeList.length >= 5) return alert("Batch Full (Max 5)");
+            let reason = isDQ ? prompt("Enter Disqualification Reason:") : "";
+            if(isDQ && !reason) return;
 
-            let dqReason = "";
-            if(isDQ) { dqReason = prompt("Enter Disqualification Reason:"); if(!dqReason) return; }
+            const know = parseInt(document.getElementById('tr-know').value) || 0;
+            const modPoints = Object.values(currentToggles).filter(v => v === true).length * 2.5;
+            const total = know + modPoints;
 
-            const knowScore = parseInt(document.getElementById('tr-know').value) || 0;
-            const modScore = (document.getElementById('tr-spag').checked ? 2.5 : 0) +
-                             (document.getElementById('tr-heal').checked ? 2.5 : 0) +
-                             (document.getElementById('tr-punish').checked ? 2.5 : 0) +
-                             (document.getElementById('tr-evid').checked ? 2.5 : 0);
-            
-            const total = knowScore + modScore;
-            const status = isDQ ? "DISQUALIFIED" : (total >= 14 ? "PASS" : "FAIL");
-
-            const trainee = {
+            traineeList.push({
                 rblx: document.getElementById('tr-rblx').value,
                 id: document.getElementById('tr-id').value,
-                know: knowScore,
+                know: know,
                 knowNotes: document.getElementById('tr-know-notes').value,
-                mod: modScore,
+                mod: modPoints,
                 modNotes: document.getElementById('tr-mod-notes').value,
                 total: total,
-                status: status,
-                dqReason: dqReason,
-                metrics: {
-                    spag: document.getElementById('tr-spag').checked ? "Y" : "N",
-                    heal: document.getElementById('tr-heal').checked ? "Y" : "N",
-                    punish: document.getElementById('tr-punish').checked ? "Y" : "N",
-                    evid: document.getElementById('tr-evid').checked ? "Y" : "N"
-                }
-            };
+                status: isDQ ? "DQ" : (total >= 14 ? "PASS" : "FAIL"),
+                reason: reason,
+                toggles: {...currentToggles}
+            });
 
-            traineeList.push(trainee);
             updateSummary();
-            clearTraineeForm();
+            // Clear inputs
+            ['tr-rblx', 'tr-id', 'tr-know', 'tr-know-notes', 'tr-mod-notes'].forEach(i => document.getElementById(i).value = "");
+            currentToggles = { spag: null, heal: null, punish: null, evid: null };
+            document.querySelectorAll('.toggle-btn').forEach(b => b.className = 'toggle-btn');
         }
 
         function updateSummary() {
-            const list = document.getElementById('summary-list');
-            list.innerHTML = "<h4>Current Batch:</h4>";
+            const container = document.getElementById('summary-list');
+            container.innerHTML = "<h4>BATCH SUMMARY:</h4>";
             traineeList.forEach((t, i) => {
-                list.innerHTML += `<div class="trainee-card">Trainee ${i+1}: ${t.rblx} | Score: ${t.total}/20 | Status: ${t.status}</div>`;
+                container.innerHTML += `<div class="trainee-card">${i+1}. ${t.rblx} | SCORE: ${t.total}/20 | STATUS: ${t.status}</div>`;
             });
-        }
-
-        function clearTraineeForm() {
-            ['tr-rblx', 'tr-id', 'tr-know', 'tr-know-notes', 'tr-mod-notes'].forEach(id => document.getElementById(id).value = "");
-            ['tr-spag', 'tr-heal', 'tr-punish', 'tr-evid'].forEach(id => document.getElementById(id).checked = false);
         }
 
         async function publishResults() {
             const hostId = document.getElementById('res-host-id').value;
             const hostRblx = document.getElementById('res-host-rblx').value;
-            
             let pings = `<@${hostId}> `;
             traineeList.forEach(t => pings += `<@${t.id}> `);
 
             const embeds = traineeList.map(t => ({
-                title: `EVALUATION: ${t.status}`,
-                color: t.status === "PASS" ? 3066993 : 15158332,
+                title: `TRAINING RESULT: ${t.status}`,
+                color: t.status === "PASS" ? 65280 : 16711680,
                 fields: [
                     { name: "Host", value: `${hostRblx} (${hostId})`, inline: true },
                     { name: "Candidate", value: `${t.rblx} (${t.id})`, inline: true },
-                    { name: "Final Score", value: `${t.total}/20`, inline: true },
-                    { name: "Knowledge Section", value: `Score: ${t.know}/10\nNotes: ${t.knowNotes}`, inline: false },
-                    { name: "Mod-Call Section", value: `SPAG: ${t.metrics.spag} | Healed: ${t.metrics.heal}\nPunish: ${t.metrics.punish} | Evidence: ${t.metrics.evid}\nNotes: ${t.modNotes}`, inline: false }
+                    { name: "Score", value: `${t.total}/20`, inline: true },
+                    { name: "Knowledge", value: `Score: ${t.know}/10\nNotes: ${t.knowNotes}` },
+                    { name: "Mod-Call", value: `SPAG: ${t.toggles.spag?'Y':'N'} | Healed: ${t.toggles.heal?'Y':'N'}\nNotes: ${t.modNotes}` }
                 ]
             }));
 
-            if(t.dqReason) embeds[embeds.length-1].fields.push({name: "DQ Reason", value: t.dqReason});
+            await fetch("YOUR_WEBHOOK_URL_HERE", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ content: pings, embeds: embeds })
+            });
+            alert("UPLOAD COMPLETE");
+            location.reload();
+        }
 
-            const payload = { content: pings, embeds: embeds };
-
-            await fetch(CONFIG.WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("Results Published!");
-            traineeList = [];
-            updateSummary();
+        function sendAnnounce() {
+            const payload = {
+                content: `<@${document.getElementById('ann-uid').value}> <@&YOUR_ROLE_ID_HERE>`,
+                embeds: [{
+                    title: "⚔️ HIGH ROCK BORDER TRAINING",
+                    color: 16711935,
+                    fields: [
+                        { name: "Time", value: `${document.getElementById('ann-time').value} ${document.getElementById('ann-tz').value}` },
+                        { name: "Location", value: document.getElementById('ann-loc').value },
+                        { name: "Notes", value: document.getElementById('ann-info').value }
+                    ]
+                }]
+            };
+            fetch("YOUR_WEBHOOK_URL_HERE", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            }).then(() => alert("BROADCAST SENT"));
         }
     </script>
 </body>
