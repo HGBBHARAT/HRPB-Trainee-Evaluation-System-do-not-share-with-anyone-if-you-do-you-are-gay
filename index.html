@@ -99,7 +99,7 @@
     <div id="login-screen">
         <h1 style="color: var(--gold); font-weight: 800;">HRBRP | Training Assist</h1>
         <input type="password" id="pass-field" style="text-align:center" placeholder="ACCESS KEY">
-        <button onclick="unlock()" class="primary-btn">INITIALIZE</button>
+        <button onclick="unlock()" class="primary-btn">LOGIN</button>
     </div>
 
     <div id="dashboard">
@@ -113,13 +113,13 @@
             <h2>BROADCAST SYSTEM</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div><label>Trainer Discord ID</label><input type="text" id="ann-uid"></div>
-                <div><label>Location</label><input type="text" id="ann-loc" value="Sheiff Breafing Room"></div>
+                <div><label>Location</label><input type="text" id="ann-loc" value="Sheriff Briefing Room"></div>
             </div>
             <label>Start Time (Local)</label>
             <input type="datetime-local" id="ann-time">
             <label>Notes</label>
             <textarea id="ann-info" rows="3"></textarea>
-            <button id="ann-btn" onclick="postAnn()" class="primary-btn">SEND BROADCAST</button>
+            <button id="ann-btn" onclick="postAnn()" class="primary-btn">Announce</button>
         </div>
 
         <div id="res-content" class="content">
@@ -142,8 +142,8 @@
                 <div class="toggle-row">
                     <div><label>SPAG</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
                     <div><label>HEALED</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
-                    <div><label>Punshied Accordingly?</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
-                    <div><label>Used Proper Evidence?</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
+                    <div><label>Punished Accordingly?</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
+                    <div><label>Used proper Evidence?</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
                 </div>
                 <label>Mod-Call Notes</label>
                 <textarea id="t-mod-notes" rows="2"></textarea>
@@ -220,7 +220,7 @@
             const mod = Object.values(toggles).filter(v => v === true).length * 2.5;
             const total = knowRaw + mod;
             const data = {
-                rblx, id: document.getElementById('t-id').value || "N/A",
+                rblx, id: document.getElementById('t-id').value || "",
                 score: total, status: total >= 14 ? "PASS" : "FAIL",
                 knowNotes: document.getElementById('t-know-notes').value || "N/A",
                 modNotes: document.getElementById('t-mod-notes').value || "N/A",
@@ -316,6 +316,9 @@
         }
 
         async function publish() {
+            const hId = document.getElementById('h-id').value;
+            if(!hId) return alert("Host Discord ID Required.");
+            
             const btn = document.getElementById('publish-btn');
             btn.disabled = true;
             let timeLeft = 30;
@@ -324,13 +327,29 @@
                 if (timeLeft <= 0) { clearInterval(timer); btn.disabled = false; btn.innerText = "PUBLISH ALL RESULTS"; }
             }, 1000);
 
+            // Create pings for Host and all Trainees
+            let pings = `<@${hId}> `;
+            batch.forEach(t => { if(t.id) pings += `<@${t.id}> `; });
+
             const embeds = batch.map(t => ({
                 title: `TRAINING EVALUATION: ${t.status}`, color: t.status === "PASS" ? 65280 : 16711680,
-                fields: [ { name: "Candidate", value: t.rblx, inline: true }, { name: "Score", value: `${t.score}/20`, inline: true }, { name: "Knowledge", value: t.knowNotes }, { name: "Mod-Call", value: t.modNotes } ],
-                footer: { text: "Host: " + document.getElementById('h-rblx').value }
+                fields: [ 
+                    { name: "Host", value: document.getElementById('h-rblx').value + ` (<@${hId}>)`, inline: true },
+                    { name: "Candidate", value: t.rblx + (t.id ? ` (<@${t.id}>)` : ""), inline: true }, 
+                    { name: "Score", value: `${t.score}/20`, inline: true }, 
+                    { name: "Knowledge", value: t.knowNotes }, 
+                    { name: "Mod-Call", value: t.modNotes } 
+                ]
             }));
-            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ embeds }) });
-            alert("Published."); batch = []; renderBatch();
+
+            await fetch(CONFIG.WEBHOOK_URL, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ content: pings, embeds }) 
+            });
+            
+            alert("Results Published with Pings."); 
+            batch = []; renderBatch();
         }
     </script>
 </body>
