@@ -265,7 +265,7 @@
             const uid = document.getElementById('ann-uid').value;
             const unix = Math.floor(new Date(document.getElementById('ann-time').value).getTime() / 1000);
             const body = {
-                content: `<@${uid}> <@&${CONFIG.ANNOUNCE_ROLE_ID}>,<@1381367973997969409>`,
+                content: `<@${uid}> <@&${CONFIG.ANNOUNCE_ROLE_ID}>,<@&1381367973997969409>`,
                 embeds: [{
                     title: "New Training Announced!", color: 16711935,
                     thumbnail: { url: CONFIG.LOGO_THUMB },
