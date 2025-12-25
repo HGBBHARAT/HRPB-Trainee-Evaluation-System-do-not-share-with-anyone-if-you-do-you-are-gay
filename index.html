@@ -10,8 +10,11 @@
             WEBHOOK_URL: "https://discord.com/api/webhooks/1452656413481636054/k1pmvQg7-qFWBJi6ESho0m3dzGu3v8OtgMIZWs7DFIxqL2CZHDAotzM0io2FTNXkEWum",
             ANNOUNCE_ROLE_ID: "1452651642850775082",
             ACCESS_KEY: "MerseBigBlackOldFatDonkeyNoobBot",
-            // Using the Raw GitHub link so Discord can actually see the file
-            THUMBNAIL_URL: "https://raw.githubusercontent.com/HGBBHARAT/HRPBRP-Assist/main/hrbrp.png"
+            // Images Provided
+            LOGO_THUMB: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697701366730802/hrbrp.png?ex=694e64fc&is=694d137c&hm=4352d63613a4a1aaf888d10dfeb4cf9277354ee2a30d1a35435593d08ae27aff&",
+            IMG_ANN: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697838994296855/HRPBRP_Announcement.png?ex=694e651d&is=694d139d&hm=bddd0e4606a65f2ef23ed92415cf287deac61a0591eb70b6e2c1f4fe46d2ece1&",
+            IMG_RES: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697757872394321/HRBRP___TER.png?ex=694e6509&is=694d1389&hm=44aa6543d96fe1e144976eb8f840fe301dc50e769f08bc73a0ba043a1b75c0c3&",
+            IMG_VV: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697795138523268/HRBRP_VV_Results.png?ex=694e6512&is=694d1392&hm=a65b443a3b6d596abf0b0215de48eaab071639daafa9be4d2e5381f17d49239f&"
         };
     </script>
     <style>
@@ -79,7 +82,7 @@
     <div id="login-screen">
         <h1 style="color: var(--gold); font-weight: 800;">HRBRP | Training Assist</h1>
         <input type="password" id="pass-field" style="text-align:center" placeholder="ACCESS KEY">
-        <button onclick="unlock()" class="primary-btn">INITIALIZE</button>
+        <button onclick="unlock()" class="primary-btn">Login</button>
     </div>
 
     <div id="dashboard">
@@ -103,7 +106,7 @@
             <textarea id="ann-desc" rows="2">Knowledge Section, Mod Call Section and Driving Section. Tick if attending.</textarea>
             <label>Additional Info</label>
             <textarea id="ann-info" rows="2"></textarea>
-            <button onclick="postAnn()" class="primary-btn">SEND BROADCAST</button>
+            <button onclick="postAnn()" class="primary-btn">Announce Training</button>
         </div>
 
         <div id="res-content" class="content">
@@ -122,10 +125,10 @@
                 <label>Knowledge (Max 10)</label><input type="number" id="t-know" max="10">
                 <label>Knowledge Notes</label><textarea id="t-know-notes"></textarea>
                 <div class="toggle-row">
-                    <div><label>SPAG</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
-                    <div><label>HEALED</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
-                    <div><label>PUNISH</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
-                    <div><label>EVID</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
+                    <div><label>Used proper SPAG?</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
+                    <div><label>Healed the trainer?</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
+                    <div><label>Punished Accordingly?</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
+                    <div><label>Used Proper Evidence?</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
                 </div>
                 <label>Mod-Call Notes</label><textarea id="t-mod-notes"></textarea>
                 <button onclick="addTrainee()" class="primary-btn" style="background: var(--pass)">ADD TO BATCH</button>
@@ -153,7 +156,7 @@
         </div>
 
         <div class="dashboard-footer">
-            Still in development phase, contact <a href="https://discord.com/users/hgb_bharat" target="_blank">@hgb_bharat 🌐</a>
+            Still in development phase to report bugs, contact <a href="https://discord.com/users/hgb_bharat" target="_blank">@hgb_bharat 🌐</a>
         </div>
     </div>
 
@@ -233,7 +236,8 @@
                 content: `<@${uid}> <@&${CONFIG.ANNOUNCE_ROLE_ID}>`,
                 embeds: [{
                     title: "New Training Announced!", color: 16711935,
-                    thumbnail: { url: CONFIG.THUMBNAIL_URL },
+                    thumbnail: { url: CONFIG.LOGO_THUMB },
+                    image: { url: CONFIG.IMG_ANN },
                     fields: [
                         { name: "Training Type:", value: document.getElementById('ann-type').value },
                         { name: "Date & Time", value: `<t:${unix}:F>` },
@@ -256,7 +260,8 @@
                 content: `<@${trID}> <@${tID}>`,
                 embeds: [{
                     title: "# VOICE VERIFICATION RESULTS", color: isPass ? 65280 : 16711680,
-                    thumbnail: { url: CONFIG.THUMBNAIL_URL },
+                    thumbnail: { url: CONFIG.LOGO_THUMB },
+                    image: { url: CONFIG.IMG_VV },
                     fields: [
                         { name: "User :", value: `**${document.getElementById('v-trainee-name').value}**` },
                         { name: "Host :", value: `<@${tID}>` },
@@ -273,16 +278,26 @@
             const hId = document.getElementById('h-id').value;
             let pings = `<@${hId}> `;
             batch.forEach(t => pings += `<@${t.id}> `);
-            const embeds = batch.map(t => ({
-                title: `TRAINING EVALUATION: ${t.status}`, color: t.status === "PASS" ? 65280 : 16711680,
-                thumbnail: { url: CONFIG.THUMBNAIL_URL },
-                fields: [
-                    { name: "Host", value: document.getElementById('h-rblx').value + ` (<@${hId}>)`, inline: true },
-                    { name: "Candidate", value: t.rblx + ` (<@${t.id}>)`, inline: true },
-                    { name: "Score", value: `${t.score}/20`, inline: true },
-                    { name: "Notes", value: `K: ${t.knowNotes}\nM: ${t.modNotes}` }
-                ]
-            }));
+            
+            // Generate multiple embeds for the batch, with the image on the LAST embed to act as a footer
+            const embeds = batch.map((t, index) => {
+                const embed = {
+                    title: `TRAINING EVALUATION: ${t.status}`, color: t.status === "PASS" ? 65280 : 16711680,
+                    thumbnail: { url: CONFIG.LOGO_THUMB },
+                    fields: [
+                        { name: "Host", value: document.getElementById('h-rblx').value + ` (<@${hId}>)`, inline: true },
+                        { name: "Candidate", value: t.rblx + ` (<@${t.id}>)`, inline: true },
+                        { name: "Score", value: `${t.score}/20`, inline: true },
+                        { name: "Notes", value: `K: ${t.knowNotes}\nM: ${t.modNotes}` }
+                    ]
+                };
+                // Only put the large banner on the last person in the batch
+                if (index === batch.length - 1) {
+                    embed.image = { url: CONFIG.IMG_RES };
+                }
+                return embed;
+            });
+
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds }) });
             alert("Published."); batch = []; renderBatch();
         }
