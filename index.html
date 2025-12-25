@@ -10,7 +10,6 @@
             WEBHOOK_URL: "https://discord.com/api/webhooks/1452656413481636054/k1pmvQg7-qFWBJi6ESho0m3dzGu3v8OtgMIZWs7DFIxqL2CZHDAotzM0io2FTNXkEWum",
             ANNOUNCE_ROLE_ID: "1452651642850775082",
             ACCESS_KEY: "MerseBigBlackOldFatDonkeyNoobBot",
-            // Images Provided
             LOGO_THUMB: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697701366730802/hrbrp.png?ex=694e64fc&is=694d137c&hm=4352d63613a4a1aaf888d10dfeb4cf9277354ee2a30d1a35435593d08ae27aff&",
             IMG_ANN: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697838994296855/HRPBRP_Announcement.png?ex=694e651d&is=694d139d&hm=bddd0e4606a65f2ef23ed92415cf287deac61a0591eb70b6e2c1f4fe46d2ece1&",
             IMG_RES: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697757872394321/HRBRP___TER.png?ex=694e6509&is=694d1389&hm=44aa6543d96fe1e144976eb8f840fe301dc50e769f08bc73a0ba043a1b75c0c3&",
@@ -19,21 +18,15 @@
     </script>
     <style>
         :root {
-            --bg: #05070a;
-            --panel: rgba(16, 20, 35, 0.95);
-            --pink: #ff00ff;
-            --blue: #00f2ff;
-            --gold: #ffcc00;
-            --pass: #00ff88;
-            --fail: #ff4444;
-            --text: #ffffff;
+            --bg: #05070a; --panel: rgba(16, 20, 35, 0.95);
+            --pink: #ff00ff; --blue: #00f2ff; --gold: #ffcc00;
+            --pass: #00ff88; --fail: #ff4444; --text: #ffffff;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at top right, #1a0b2e, #05070a);
-            color: var(--text);
-            margin: 0;
+            color: var(--text); margin: 0;
             display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;
         }
 
@@ -75,6 +68,12 @@
         .dashboard-footer a { color: var(--pink); text-decoration: none; font-weight: bold; }
 
         .batch-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .card-controls { display: flex; gap: 8px; }
+        .control-btn { padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 800; border: none; text-transform: uppercase; transition: 0.2s; }
+        .edit-btn { background: var(--blue); color: #000; }
+        .edit-btn:hover { background: #00d2dd; }
+        .rem-btn { background: var(--fail); color: #fff; }
+        .rem-btn:hover { background: #dd3333; }
     </style>
 </head>
 <body>
@@ -82,7 +81,7 @@
     <div id="login-screen">
         <h1 style="color: var(--gold); font-weight: 800;">HRBRP | Training Assist</h1>
         <input type="password" id="pass-field" style="text-align:center" placeholder="ACCESS KEY">
-        <button onclick="unlock()" class="primary-btn">Login</button>
+        <button onclick="unlock()" class="primary-btn">INITIALIZE</button>
     </div>
 
     <div id="dashboard">
@@ -93,7 +92,7 @@
         </div>
 
         <div id="ann-content" class="content active">
-            <h2>BROADCAST SYSTEM</h2>
+            <h2>ANNOUNCEMENT SYSTEM</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div><label>Trainer Discord ID</label><input type="text" id="ann-uid"></div>
                 <div><label>Training Type</label><input type="text" id="ann-type" value="Normal Training"></div>
@@ -106,7 +105,7 @@
             <textarea id="ann-desc" rows="2">Knowledge Section, Mod Call Section and Driving Section. Tick if attending.</textarea>
             <label>Additional Info</label>
             <textarea id="ann-info" rows="2"></textarea>
-            <button onclick="postAnn()" class="primary-btn">Announce Training</button>
+            <button onclick="postAnn()" class="primary-btn">ANNOUNCE</button>
         </div>
 
         <div id="res-content" class="content">
@@ -126,7 +125,7 @@
                 <label>Knowledge Notes</label><textarea id="t-know-notes"></textarea>
                 <div class="toggle-row">
                     <div><label>Used proper SPAG?</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
-                    <div><label>Healed the trainer?</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
+                    <div><label>HEALED?</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
                     <div><label>Punished Accordingly?</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
                     <div><label>Used Proper Evidence?</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
                 </div>
@@ -196,6 +195,32 @@
             document.getElementById(p + '-n').className = !v ? 't-btn no-active' : 't-btn';
         }
 
+        function removeTrainee(index) {
+            const traineeName = batch[index].rblx;
+            if(confirm(`Are you sure you want to REMOVE "${traineeName}" from the batch?`)) {
+                batch.splice(index, 1);
+                renderBatch();
+            }
+        }
+
+        function editTrainee(index) {
+            const t = batch[index];
+            document.getElementById('t-rblx').value = t.rblx;
+            document.getElementById('t-id').value = t.id;
+            document.getElementById('t-know').value = t.know;
+            document.getElementById('t-know-notes').value = t.knowNotes;
+            document.getElementById('t-mod-notes').value = t.modNotes;
+            setTog('spag', t.toggles.spag);
+            setTog('heal', t.toggles.heal);
+            setTog('punish', t.toggles.punish);
+            setTog('evid', t.toggles.evid);
+            
+            // Remove from list so it can be re-added after editing
+            batch.splice(index, 1);
+            renderBatch();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function addTrainee() {
             const rblx = document.getElementById('t-rblx').value;
             const tid = document.getElementById('t-id').value;
@@ -205,8 +230,9 @@
             const total = Math.min(knowRaw, 10) + mod;
             batch.push({
                 rblx, id: tid, score: total, status: total >= 14 ? "PASS" : "FAIL",
-                knowNotes: document.getElementById('t-know-notes').value || "N/A",
-                modNotes: document.getElementById('t-mod-notes').value || "N/A"
+                know: knowRaw, knowNotes: document.getElementById('t-know-notes').value || "N/A",
+                modNotes: document.getElementById('t-mod-notes').value || "N/A",
+                toggles: {...toggles}
             });
             renderBatch(); clearForm();
         }
@@ -216,8 +242,11 @@
             out.innerHTML = batch.length ? "<h3>CURRENT BATCH</h3>" : "";
             batch.forEach((t, i) => {
                 out.innerHTML += `<div class="batch-card">
-                    <div><strong>${t.rblx}</strong> (${t.status})</div>
-                    <button class="t-btn no-active" onclick="batch.splice(${i},1);renderBatch()">✕</button>
+                    <div><strong>${t.rblx}</strong> - ${t.score}/20 (${t.status})</div>
+                    <div class="card-controls">
+                        <button class="control-btn edit-btn" onclick="editTrainee(${i})">Edit</button>
+                        <button class="control-btn rem-btn" onclick="removeTrainee(${i})">Remove</button>
+                    </div>
                 </div>`;
             });
             document.getElementById('publish-btn').style.display = batch.length ? 'block' : 'none';
@@ -275,11 +304,10 @@
         }
 
         async function publish() {
+            if(!confirm("Are you sure you want to publish these results to Discord?")) return;
             const hId = document.getElementById('h-id').value;
             let pings = `<@${hId}> `;
             batch.forEach(t => pings += `<@${t.id}> `);
-            
-            // Generate multiple embeds for the batch, with the image on the LAST embed to act as a footer
             const embeds = batch.map((t, index) => {
                 const embed = {
                     title: `TRAINING EVALUATION: ${t.status}`, color: t.status === "PASS" ? 65280 : 16711680,
@@ -288,18 +316,14 @@
                         { name: "Host", value: document.getElementById('h-rblx').value + ` (<@${hId}>)`, inline: true },
                         { name: "Candidate", value: t.rblx + ` (<@${t.id}>)`, inline: true },
                         { name: "Score", value: `${t.score}/20`, inline: true },
-                        { name: "Notes", value: `K: ${t.knowNotes}\nM: ${t.modNotes}` }
+                        { name: "Notes", value: `Question and Answer Section: ${t.knowNotes}\nMod Call Section: ${t.modNotes}` }
                     ]
                 };
-                // Only put the large banner on the last person in the batch
-                if (index === batch.length - 1) {
-                    embed.image = { url: CONFIG.IMG_RES };
-                }
+                if (index === batch.length - 1) embed.image = { url: CONFIG.IMG_RES };
                 return embed;
             });
-
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds }) });
-            alert("Published."); batch = []; renderBatch();
+            alert("Published Successfully."); batch = []; renderBatch();
         }
     </script>
 </body>
