@@ -7,7 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script>
         const CONFIG = {
-            WEBHOOK_URL: "https://discord.com/api/webhooks/1452656413481636054/k1pmvQg7-qFWBJi6ESho0m3dzGu3v8OtgMIZWs7DFIxqL2CZHDAotzM0io2FTNXkEWum",
+            // Split Webhooks
+            WEBHOOK_ANN: "https://discord.com/api/webhooks/1452656413481636054/k1pmvQg7-qFWBJi6ESho0m3dzGu3v8OtgMIZWs7DFIxqL2CZHDAotzM0io2FTNXkEWum", // Announcements Only
+            WEBHOOK_RES: "https://discord.com/api/webhooks/1453720158139973704/CJKJF7812tqRQhoc4glg9ZnwGTh-WWjsB9RAQYj26N9-AtvYkhtS9zfUpqD736VRJAzu", // Results & Voice Verification
+            
             ANNOUNCE_ROLE_ID: "1452651642850775082",
             ACCESS_KEY: "MerseBigBlackOldFatDonkeyNoobBot",
             LOGO_THUMB: "https://cdn.discordapp.com/attachments/1434075893868920852/1453697701366730802/hrbrp.png?ex=694e64fc&is=694d137c&hm=4352d63613a4a1aaf888d10dfeb4cf9277354ee2a30d1a35435593d08ae27aff&",
@@ -215,7 +218,6 @@
             setTog('punish', t.toggles.punish);
             setTog('evid', t.toggles.evid);
             
-            // Remove from list so it can be re-added after editing
             batch.splice(index, 1);
             renderBatch();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -258,6 +260,7 @@
             document.querySelectorAll('.t-btn').forEach(b => b.className = 't-btn');
         }
 
+        // POSTS TO ANNOUNCEMENT WEBHOOK
         async function postAnn() {
             const uid = document.getElementById('ann-uid').value;
             const unix = Math.floor(new Date(document.getElementById('ann-time').value).getTime() / 1000);
@@ -276,10 +279,11 @@
                     ]
                 }]
             };
-            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            await fetch(CONFIG.WEBHOOK_ANN, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
             alert("Broadcast sent.");
         }
 
+        // POSTS TO RESULTS/VOICE WEBHOOK
         async function postVoiceVerify() {
             const tID = document.getElementById('v-trainer-uid').value;
             const trID = document.getElementById('v-trainee-uid').value;
@@ -299,10 +303,11 @@
                     ]
                 }]
             };
-            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            await fetch(CONFIG.WEBHOOK_RES, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
             alert("Verification Sent.");
         }
 
+        // POSTS TO RESULTS/VOICE WEBHOOK
         async function publish() {
             if(!confirm("Are you sure you want to publish these results to Discord?")) return;
             const hId = document.getElementById('h-id').value;
@@ -322,7 +327,7 @@
                 if (index === batch.length - 1) embed.image = { url: CONFIG.IMG_RES };
                 return embed;
             });
-            await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds }) });
+            await fetch(CONFIG.WEBHOOK_RES, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: pings, embeds }) });
             alert("Published Successfully."); batch = []; renderBatch();
         }
     </script>
