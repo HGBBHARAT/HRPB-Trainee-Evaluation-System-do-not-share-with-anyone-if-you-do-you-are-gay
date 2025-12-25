@@ -9,7 +9,8 @@
         const CONFIG = {
             WEBHOOK_URL: "https://discord.com/api/webhooks/1452656413481636054/k1pmvQg7-qFWBJi6ESho0m3dzGu3v8OtgMIZWs7DFIxqL2CZHDAotzM0io2FTNXkEWum",
             ANNOUNCE_ROLE_ID: "1452651642850775082",
-            ACCESS_KEY: "MerseBigBlackOldFatDonkeyNoobBot"
+            ACCESS_KEY: "MerseBigBlackOldFatDonkeyNoobBot",
+            THUMBNAIL_URL: "https://raw.githubusercontent.com/HGBBHARAT/HRPBRP-Assist/main/hrbrp.png" // Update this path if hosted elsewhere
         };
     </script>
     <style>
@@ -63,7 +64,6 @@
             font-weight: 800; cursor: pointer; margin-top: 25px; text-transform: uppercase;
         }
         
-        /* Persistent Footer Styling */
         .dashboard-footer {
             padding: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.4); text-align: center; 
             border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);
@@ -78,7 +78,7 @@
     <div id="login-screen">
         <h1 style="color: var(--gold); font-weight: 800;">HRBRP | Training Assist</h1>
         <input type="password" id="pass-field" style="text-align:center" placeholder="ACCESS KEY">
-        <button onclick="unlock()" class="primary-btn">LOGIN</button>
+        <button onclick="unlock()" class="primary-btn">INITIALIZE</button>
     </div>
 
     <div id="dashboard">
@@ -89,7 +89,7 @@
         </div>
 
         <div id="ann-content" class="content active">
-            <h2>ANNOUNCE TRAINING</h2>
+            <h2>BROADCAST SYSTEM</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div><label>Trainer Discord ID</label><input type="text" id="ann-uid"></div>
                 <div><label>Training Type</label><input type="text" id="ann-type" value="Normal Training"></div>
@@ -102,7 +102,7 @@
             <textarea id="ann-desc" rows="2">Knowledge Section, Mod Call Section and Driving Section. Tick if attending.</textarea>
             <label>Additional Info</label>
             <textarea id="ann-info" rows="2"></textarea>
-            <button id="ann-btn" onclick="postAnn()" class="primary-btn">ANNOUNCE</button>
+            <button onclick="postAnn()" class="primary-btn">SEND BROADCAST</button>
         </div>
 
         <div id="res-content" class="content">
@@ -121,7 +121,7 @@
                 <label>Knowledge (Max 10)</label><input type="number" id="t-know" max="10">
                 <label>Knowledge Notes</label><textarea id="t-know-notes"></textarea>
                 <div class="toggle-row">
-                    <div><label>SPAG?</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
+                    <div><label>Used proper SPAG?</label><div style="display:flex;gap:5px"><button class="t-btn" id="s-y" onclick="setTog('spag',true)">Y</button><button class="t-btn" id="s-n" onclick="setTog('spag',false)">N</button></div></div>
                     <div><label>HEALED?</label><div style="display:flex;gap:5px"><button class="t-btn" id="h-y" onclick="setTog('heal',true)">Y</button><button class="t-btn" id="h-n" onclick="setTog('heal',false)">N</button></div></div>
                     <div><label>Punished Accordingly?</label><div style="display:flex;gap:5px"><button class="t-btn" id="p-y" onclick="setTog('punish',true)">Y</button><button class="t-btn" id="p-n" onclick="setTog('punish',false)">N</button></div></div>
                     <div><label>Used proper evidence?</label><div style="display:flex;gap:5px"><button class="t-btn" id="e-y" onclick="setTog('evid',true)">Y</button><button class="t-btn" id="e-n" onclick="setTog('evid',false)">N</button></div></div>
@@ -152,14 +152,13 @@
         </div>
 
         <div class="dashboard-footer">
-            Still in development phase, contact <a href="https://discord.com/users/hgb_bharat" target="_blank">@hgb_bharat 🌐 to report bugs.</a>
+            Still in development phase, contact <a href="https://discord.com/users/hgb_bharat" target="_blank">@hgb_bharat 🌐</a>
         </div>
     </div>
 
     <script>
         let batch = [];
         let toggles = { spag: null, heal: null, punish: null, evid: null };
-        let trainerCooldowns = {};
 
         function unlock() {
             if(document.getElementById('pass-field').value === CONFIG.ACCESS_KEY) {
@@ -196,11 +195,10 @@
         function addTrainee() {
             const rblx = document.getElementById('t-rblx').value;
             const tid = document.getElementById('t-id').value;
-            if(!rblx || !tid) return alert("Username and ID required.");
+            if(!rblx || !tid) return alert("Missing info.");
             let knowRaw = parseInt(document.getElementById('t-know').value) || 0;
-            if (knowRaw > 10) knowRaw = 10; 
             const mod = Object.values(toggles).filter(v => v === true).length * 2.5;
-            const total = knowRaw + mod;
+            const total = Math.min(knowRaw, 10) + mod;
             batch.push({
                 rblx, id: tid, score: total, status: total >= 14 ? "PASS" : "FAIL",
                 knowNotes: document.getElementById('t-know-notes').value || "N/A",
@@ -229,24 +227,23 @@
 
         async function postAnn() {
             const uid = document.getElementById('ann-uid').value;
-            const now = Date.now();
-            if(trainerCooldowns[uid] && now < trainerCooldowns[uid]) return alert("Cooldown Active.");
             const unix = Math.floor(new Date(document.getElementById('ann-time').value).getTime() / 1000);
             const body = {
                 content: `<@${uid}> <@&${CONFIG.ANNOUNCE_ROLE_ID}>`,
                 embeds: [{
                     title: "New Training Announced!", color: 16711935,
+                    thumbnail: { url: CONFIG.THUMBNAIL_URL },
                     fields: [
                         { name: "Training Type:", value: document.getElementById('ann-type').value },
                         { name: "Date & Time", value: `<t:${unix}:F>` },
                         { name: "Location", value: document.getElementById('ann-loc').value },
-                        { name: "Description", value: document.getElementById('ann-desc').value },
+                        { name: "Notes", value: document.getElementById('ann-desc').value },
                         { name: "Additional Info", value: document.getElementById('ann-info').value || "None" }
                     ]
                 }]
             };
             await fetch(CONFIG.WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
-            trainerCooldowns[uid] = now + 300000; alert("Sent.");
+            alert("Broadcast sent.");
         }
 
         async function postVoiceVerify() {
@@ -257,8 +254,8 @@
             const body = {
                 content: `<@${trID}> <@${tID}>`,
                 embeds: [{
-                    title: "VOICE VERIFICATION RESULTS",
-                    color: isPass ? 65280 : 16711680,
+                    title: "# VOICE VERIFICATION RESULTS", color: isPass ? 65280 : 16711680,
+                    thumbnail: { url: CONFIG.THUMBNAIL_URL },
                     fields: [
                         { name: "User :", value: `**${document.getElementById('v-trainee-name').value}**` },
                         { name: "Host :", value: `<@${tID}>` },
@@ -277,6 +274,7 @@
             batch.forEach(t => pings += `<@${t.id}> `);
             const embeds = batch.map(t => ({
                 title: `TRAINING EVALUATION: ${t.status}`, color: t.status === "PASS" ? 65280 : 16711680,
+                thumbnail: { url: CONFIG.THUMBNAIL_URL },
                 fields: [
                     { name: "Host", value: document.getElementById('h-rblx').value + ` (<@${hId}>)`, inline: true },
                     { name: "Candidate", value: t.rblx + ` (<@${t.id}>)`, inline: true },
